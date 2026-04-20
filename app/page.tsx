@@ -203,7 +203,7 @@ export default function Home() {
       <div className="dashboard" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
           <RefreshCw className="animate-spin" size={48} color="var(--accent-green)" style={{ marginBottom: '20px' }} />
-          <p>Initialisation de LifeWrapped...</p>
+          <p>Initialisation de Écho...</p>
         </div>
       </div>
     );
@@ -216,7 +216,7 @@ export default function Home() {
     <main className="dashboard animated">
       <header className="main-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <h1 style={{ margin: 0 }}>Life<span style={{ color: 'var(--accent-green)' }}>Wrapped</span></h1>
+          <h1 style={{ margin: 0 }}>Écho</h1>
           {stats?.username && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '5px 12px', borderRadius: '50px', border: '1px solid var(--glass-border)' }}>

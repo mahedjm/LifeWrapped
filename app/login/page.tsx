@@ -51,7 +51,7 @@ export default function LoginPage() {
   return (
     <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-primary)', padding: '20px' }}>
       <div style={{ background: 'var(--card-bg)', padding: '2.5rem', borderRadius: '24px', width: '100%', maxWidth: '450px', border: '1px solid var(--glass-border)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
-        <h1 style={{ marginBottom: '1rem', fontSize: '2.2rem', fontWeight: 800 }}>Life<span style={{ color: 'var(--accent-green)' }}>Wrapped</span></h1>
+        <h1 style={{ marginBottom: '1rem', fontSize: '2.2rem', fontWeight: 800 }}>Écho</h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.95rem' }}>
           {isCodeValid ? 'Code validé ! Authentification requise pour continuer.' : 'Entrez votre code d\'invitation pour accéder au Club Privé.'}
         </p>

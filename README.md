@@ -1,6 +1,6 @@
-# 🎵 LifeWrapped — Votre Hub Musical Privé
+# 🎵 Écho — Votre Hub Musical Privé
 
-**LifeWrapped** est un dashboard d'analytics musicales premium conçu pour transformer vos données Last.fm en une expérience visuelle élégante, interactive et totalement privée. 
+**Écho** est un dashboard d'analytics musicales premium conçu pour transformer vos données Last.fm en une expérience visuelle élégante, interactive et totalement privée. 
 
 Initialement créé comme un outil personnel, il est désormais architecturé comme un **SaaS "Club Privé"** : partagez l'accès avec vos amis tout en gardant une isolation totale des données.
 
