@@ -6,7 +6,7 @@ import { getRecentTracks, getArtistTags, getTrackInfo, getArtistInfo } from './l
  * Optimisé pour la performance : parallélisation des appels API et réduction des requêtes DB.
  */
 export async function syncRecentlyPlayed(userId: string, username: string) {
-  console.log(`--- Turbo Syncing Last.fm Tracks for ${username} ---`);
+  console.log(`--- Turbo Syncing Écho Tracks for ${username} ---`);
   const startTime = Date.now();
   
   try {
