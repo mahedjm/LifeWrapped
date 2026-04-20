@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import { getRecentTracks } from '@/lib/lastfm';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -23,3 +22,4 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+ Boat
