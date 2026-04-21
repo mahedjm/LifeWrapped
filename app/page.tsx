@@ -43,6 +43,8 @@ export default function Home() {
   const [nowPlaying, setNowPlaying] = useState<any>(null);
   const [themeColor, setThemeColor] = useState('#1DB954');
   const lastTrackId = useRef<string | null>(null);
+  const nowPlayingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
@@ -73,6 +75,15 @@ export default function Home() {
     currentArtistLimit = artistLimit,
     currentTrackLimit = trackLimit
   ) => {
+    // Annulation de la requête précédente si elle existe encore
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Nouveau contrôleur pour cette requête
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     if (sync) setSyncing(true);
     try {
       console.log('Fetching stats...', { currentArtistPeriod, currentTrackPeriod, currentChartPeriod });
@@ -84,20 +95,29 @@ export default function Home() {
       url.searchParams.set('artistLimit', currentArtistLimit.toString());
       url.searchParams.set('trackLimit', currentTrackLimit.toString());
       
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), { signal: controller.signal });
       if (!res.ok) {
         throw new Error(`Erreur serveur: ${res.status}`);
       }
       const data = await res.json();
       console.log('Stats received:', data);
+      
+      // On ne met à jour que si ce n'est pas une requête annulée
       setStats(data);
       setError(null);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log('Requête stats annulée (Race Condition évitée)');
+        return;
+      }
       console.error('Failed to fetch stats:', err);
       setError("Erreur lors de la récupération des données.");
     } finally {
-      setLoading(false);
-      setSyncing(false);
+      // Nettoyage final seulement si c'est la requête actuelle qui se termine
+      if (!controller.signal.aborted) {
+        setLoading(false);
+        setSyncing(false);
+      }
     }
   };
 
@@ -120,7 +140,24 @@ export default function Home() {
         }
         
         lastTrackId.current = currentId;
-        setNowPlaying(currentTrack);
+
+        if (currentTrack) {
+          // Si un morceau joue, on annule tout timer de suppression en cours
+          if (nowPlayingTimeoutRef.current) {
+            clearTimeout(nowPlayingTimeoutRef.current);
+            nowPlayingTimeoutRef.current = null;
+          }
+          setNowPlaying(currentTrack);
+        } else {
+          // Si aucun morceau ne joue, on ne supprime pas immédiatement
+          // On lance un délai de grâce de 60 secondes
+          if (!nowPlayingTimeoutRef.current) {
+            nowPlayingTimeoutRef.current = setTimeout(() => {
+              setNowPlaying(null);
+              nowPlayingTimeoutRef.current = null;
+            }, 60000); // 60 secondes de délai
+          }
+        }
       } catch (e) {
         console.error('Failed to fetch now playing', e);
       }
@@ -135,11 +172,22 @@ export default function Home() {
     return () => {
       clearInterval(interval);
       window.removeEventListener('focus', checkNowPlaying);
+      if (nowPlayingTimeoutRef.current) clearTimeout(nowPlayingTimeoutRef.current);
     };
   }, []);
 
   useEffect(() => {
-    fetchStats(false, period, trackPeriod, chartPeriod, artistLimit, trackLimit);
+    // Ajout d'un debounce de 300ms pour éviter de mitrailler le serveur
+    const timer = setTimeout(() => {
+      fetchStats(false, period, trackPeriod, chartPeriod, artistLimit, trackLimit);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [period, trackPeriod, chartPeriod, artistLimit, trackLimit]);
 
   const formatTime = (ms: number) => {
@@ -205,10 +253,12 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="dashboard" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <RefreshCw className="animate-spin" size={48} color="var(--accent-green)" style={{ marginBottom: '20px' }} />
-          <p>Initialisation de Écho...</p>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-dark)' }}>
+        <div className="logo-container" style={{ transform: 'scale(1.5)' }}>
+          <div className="logo-wave" />
+          <div className="logo-wave" />
+          <div className="logo-wave" />
+          <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', position: 'relative', zIndex: 2 }}>Écho</h1>
         </div>
       </div>
     );
@@ -221,7 +271,12 @@ export default function Home() {
     <main className="dashboard animated">
       <header className="main-header">
         <div className="header-top">
-          <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Écho</h1>
+          <div className="logo-container">
+            <div className="logo-wave" />
+            <div className="logo-wave" />
+            <div className="logo-wave" />
+            <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', position: 'relative', zIndex: 2 }}>Écho</h1>
+          </div>
           
           {stats?.username && (
             <div className="user-badge">
@@ -231,15 +286,10 @@ export default function Home() {
                 <strong>{stats.username}</strong>
               </div>
               <button 
+                className="logout-btn" 
                 onClick={handleLogout}
-                className="logout-btn"
-                title="Déconnexion"
-                style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer', opacity: 0.7, display: 'flex', alignItems: 'center', gap: '5px', padding: '5px' }}
-                onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
               >
                 <LogOut size={18} />
-                <span className="mobile-hide" style={{ fontSize: '0.8rem' }}>Déconnexion</span>
               </button>
             </div>
           )}

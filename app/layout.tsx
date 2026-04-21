@@ -1,19 +1,13 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Sora } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "LifeWrapped - Dashboard",
+  title: "Écho - Dashboard",
   description: "Suivez votre temps d'écoute musical personnel",
 };
 
@@ -23,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
-      <body>{children}</body>
+    <html lang="fr" className={sora.variable} suppressHydrationWarning>
+      <body style={{ fontFamily: 'var(--font-sora), sans-serif' }}>{children}</body>
     </html>
   );
 }

@@ -23,7 +23,7 @@ html, body {
 body {
   background-color: var(--bg-dark);
   color: var(--text-primary);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sora), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
   user-select: none; /* Désactive la sélection de texte */
   cursor: default;   /* Force le curseur par défaut au lieu du curseur de texte */
@@ -68,6 +68,52 @@ h1 {
   background: var(--accent-green);
   border-radius: 2px;
   box-shadow: 0 0 10px var(--accent-green);
+}
+
+.logo-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  z-index: 10;
+}
+
+.logo-wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(29, 185, 84, 0.3);
+  z-index: -1;
+  pointer-events: none;
+  animation: logo-wave-pulse 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+  opacity: 0;
+}
+
+.logo-wave:nth-child(2) {
+  animation-delay: 1.3s;
+}
+
+.logo-wave:nth-child(3) {
+  animation-delay: 2.6s;
+}
+
+@keyframes logo-wave-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.5);
+    opacity: 0;
+  }
 }
 
 .header-top {
@@ -328,7 +374,20 @@ h1 {
   }
 
   .logout-btn {
-    padding: 4px !important;
+    padding: 8px !important;
+    background: rgba(255, 68, 68, 0.1) !important;
+    border: 1px solid rgba(255, 68, 68, 0.2) !important;
+    border-radius: 50% !important;
+    color: #ff4444 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .logout-btn:hover {
+    background: rgba(255, 68, 68, 0.2) !important;
+    transform: scale(1.1);
   }
 
   .header-controls {
