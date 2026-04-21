@@ -461,6 +461,16 @@ h1 {
     to { opacity: 1; }
   }
 
+  .main-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-top: 50px !important;
+    margin-bottom: 30px !important;
+  }
+
   .chart-header {
     flex-direction: column !important;
     align-items: center !important;
