@@ -6,6 +6,7 @@
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
   --glass-border: rgba(255, 255, 255, 0.1);
+  --logo-wave-scale: 2.8;
 }
 
 * {
@@ -111,7 +112,7 @@ h1 {
     opacity: 0.6;
   }
   100% {
-    transform: translate(-50%, -50%) scale(4.5);
+    transform: translate(-50%, -50%) scale(var(--logo-wave-scale));
     opacity: 0;
   }
 }
@@ -120,7 +121,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 48px; /* Augmenté pour laisser de la place aux ondes du logo */
 }
 
 .user-badge {
@@ -164,6 +165,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   gap: 15px;
+  padding-left: 10px; /* Petit décalage pour éviter les ondes du logo */
 }
 
 .action-buttons {
@@ -345,6 +347,10 @@ h1 {
 
 /* Fix pour Mobile : Tooltips au-dessus au lieu de la droite */
 @media (max-width: 768px) {
+  :root {
+    --logo-wave-scale: 2.0; /* Rayon plus court sur mobile */
+  }
+
   .tooltip-text {
     top: auto;
     bottom: 150%;

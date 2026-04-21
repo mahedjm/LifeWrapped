@@ -12,6 +12,25 @@ function LoginForm() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const res = await fetch('/api/auth/check-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isAuthenticated) {
+            router.push('/');
+          } else if (data.isInviteAuthorized) {
+            setIsCodeValid(true);
+          }
+        }
+      } catch (err) {
+        console.error('Erreur check-status:', err);
+      }
+    };
+    checkAuthStatus();
+  }, [router]);
+
+  useEffect(() => {
     const err = searchParams.get('error');
     if (err) setError(err);
   }, [searchParams]);
@@ -50,7 +69,7 @@ function LoginForm() {
 
   return (
     <div style={{ background: 'var(--card-bg)', padding: '2.5rem', borderRadius: '24px', width: '100%', maxWidth: '450px', border: '1px solid var(--glass-border)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
-      <div className="logo-container" style={{ transform: 'scale(1.2)', marginBottom: '2.5rem' }}>
+      <div className="logo-container" style={{ marginBottom: '2.5rem' }}>
         <div className="logo-wave" />
         <div className="logo-wave" />
         <div className="logo-wave" />

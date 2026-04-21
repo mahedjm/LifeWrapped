@@ -3,18 +3,19 @@ import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
   const session = request.cookies.get('auth_session')?.value;
+  const { pathname } = request.nextUrl;
 
-  // Protect the dashboard (root route)
-  if (request.nextUrl.pathname === '/') {
+  // Protect the dashboard and all other pages
+  if (pathname === '/' || !pathname.includes('.')) { // Simple check for pages
+    if (pathname === '/login') {
+      if (session) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+      return NextResponse.next();
+    }
+
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
-  // Prevent logged-in users from accessing the login page
-  if (request.nextUrl.pathname === '/login') {
-    if (session) {
-      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
@@ -22,5 +23,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/login'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 30 * 24 * 60 * 60
+      maxAge: 90 * 24 * 60 * 60
     });
 
     cookieStore.set('lastfm_username', session.name, {
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 30 * 24 * 60 * 60
+      maxAge: 90 * 24 * 60 * 60
     });
 
     // Nettoyer le cookie temporaire
