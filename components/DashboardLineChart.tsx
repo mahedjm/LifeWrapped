@@ -34,7 +34,7 @@ export default function DashboardLineChart({ data, color = '#1db954' }: Dashboar
         chartInstance.current.data.datasets[0].backgroundColor = gradient;
       }
       chartInstance.current.data.datasets[0].borderColor = color;
-      chartInstance.current.data.datasets[0].pointBackgroundColor = color;
+      (chartInstance.current.data.datasets[0] as any).pointBackgroundColor = color;
       
       chartInstance.current.update();
     } else if (chartRef.current) {
