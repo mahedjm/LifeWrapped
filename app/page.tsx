@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Activity, Clock, Calendar, BarChart3, RefreshCw, AlertCircle, Music, ChevronDown, PieChart, HelpCircle } from 'lucide-react';
 import DashboardChart from '@/components/DashboardChart';
 import DashboardLineChart from '@/components/DashboardLineChart';
@@ -152,6 +153,8 @@ export default function Home() {
       <span className="tooltip-text">{text}</span>
     </span>
   );
+
+  const router = useRouter();
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
