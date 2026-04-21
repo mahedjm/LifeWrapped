@@ -686,7 +686,7 @@ export default function Home() {
             </div>
 
             {/* Rangée 2 : Contrôles */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {(period === 'month' || period === 'year') && stats?.firstEntryDate && (
                   <span style={{ 
@@ -702,7 +702,7 @@ export default function Home() {
                 )}
               </div>
             
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
+              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
                 <div style={{ 
                   display: 'flex', 
                   gap: '6px', 
@@ -862,7 +862,7 @@ export default function Home() {
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {(trackPeriod === 'month' || trackPeriod === 'year') && stats?.firstEntryDate && (
                   <span style={{ 
@@ -878,7 +878,7 @@ export default function Home() {
                 )}
               </div>
             
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
+              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
                 <div style={{ 
                   display: 'flex', 
                   gap: '6px', 
