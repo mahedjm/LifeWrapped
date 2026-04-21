@@ -50,7 +50,23 @@ function LoginForm() {
 
   return (
     <div style={{ background: 'var(--card-bg)', padding: '2.5rem', borderRadius: '24px', width: '100%', maxWidth: '450px', border: '1px solid var(--glass-border)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
-      <h1 style={{ marginBottom: '1rem', fontSize: '3rem', fontWeight: 900, letterSpacing: '-1px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Écho</h1>
+      <div className="logo-container" style={{ transform: 'scale(1.2)', marginBottom: '2.5rem' }}>
+        <div className="logo-wave" />
+        <div className="logo-wave" />
+        <div className="logo-wave" />
+        <h1 style={{ 
+          margin: 0, 
+          fontSize: '3rem', 
+          fontWeight: 900, 
+          letterSpacing: '-1px', 
+          background: 'linear-gradient(135deg, #1DB954, #00c9ff)', 
+          WebkitBackgroundClip: 'text', 
+          WebkitTextFillColor: 'transparent', 
+          backgroundClip: 'text',
+          position: 'relative',
+          zIndex: 2 
+        }}>Écho</h1>
+      </div>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.95rem' }}>
         {isCodeValid ? 'Code validé ! Authentification requise pour continuer.' : 'Entrez votre code d\'invitation pour accéder au Club Privé.'}
       </p>

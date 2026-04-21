@@ -87,7 +87,7 @@ h1 {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 1px solid rgba(29, 185, 84, 0.3);
+  border: 1.5px solid color-mix(in srgb, var(--accent-green), transparent 40%);
   z-index: -1;
   pointer-events: none;
   animation: logo-wave-pulse 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
@@ -108,10 +108,10 @@ h1 {
     opacity: 0;
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.6;
   }
   100% {
-    transform: translate(-50%, -50%) scale(3.5);
+    transform: translate(-50%, -50%) scale(4.5);
     opacity: 0;
   }
 }
@@ -139,6 +139,24 @@ h1 {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.logout-btn {
+  padding: 8px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+  border-radius: 50%;
+  color: #ff4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 68, 68, 0.2);
+  transform: scale(1.1);
 }
 
 .header-controls {
@@ -363,6 +381,10 @@ h1 {
     line-height: 1.1;
   }
 
+  .logo-container {
+    margin-left: 10px; /* Laisse de la place aux ondes sur le bord gauche */
+  }
+
   .user-badge {
     gap: 10px;
     padding-top: 2px;
@@ -371,23 +393,6 @@ h1 {
   .user-info {
     padding: 6px 14px !important;
     font-size: 0.9rem !important; /* Un peu plus grand */
-  }
-
-  .logout-btn {
-    padding: 8px !important;
-    background: rgba(255, 68, 68, 0.1) !important;
-    border: 1px solid rgba(255, 68, 68, 0.2) !important;
-    border-radius: 50% !important;
-    color: #ff4444 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-
-  .logout-btn:hover {
-    background: rgba(255, 68, 68, 0.2) !important;
-    transform: scale(1.1);
   }
 
   .header-controls {
