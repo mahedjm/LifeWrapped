@@ -13,6 +13,7 @@ import { Share2 } from 'lucide-react';
 interface Stats {
   username?: string;
   today: number;
+  yesterday?: number;
   weekly: { date: string; ms: number }[];
   monthly: number;
   previousMonthly: number;
