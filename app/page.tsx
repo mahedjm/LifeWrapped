@@ -221,10 +221,7 @@ export default function Home() {
     <main className="dashboard animated">
       <header className="main-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/logo.png" alt="Écho Logo" style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover' }} />
-            <h1 style={{ margin: 0 }}>Écho</h1>
-          </div>
+          <h1 style={{ margin: 0, fontSize: '3rem', fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Écho</h1>
           {stats?.username && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '5px 12px', borderRadius: '50px', border: '1px solid var(--glass-border)' }}>
@@ -248,7 +245,14 @@ export default function Home() {
               className="btn btn-secondary" 
               onClick={handleExport}
               disabled={syncing || !stats}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(168, 85, 247, 0.1)', color: '#ab67ff' }}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                background: `${themeColor}26`, // 26 is hex for 15% opacity
+                color: themeColor,
+                border: `1px solid ${themeColor}4d` // 4d is hex for 30% opacity
+              }}
             >
               <Share2 size={18} />
               Partager
