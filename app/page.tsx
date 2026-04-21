@@ -8,7 +8,7 @@ import DashboardLineChart from '@/components/DashboardLineChart';
 import NowPlaying from '@/components/NowPlaying';
 import ShareCard from '@/components/ShareCard';
 import { useRef } from 'react';
-import { Share2 } from 'lucide-react';
+import { Share2, LogOut, User } from 'lucide-react';
 
 interface Stats {
   username?: string;
@@ -220,56 +220,34 @@ export default function Home() {
   return (
     <main className="dashboard animated">
       <header className="main-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <h1 style={{ margin: 0, fontSize: '3rem', fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Écho</h1>
+        <div className="header-top">
+          <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Écho</h1>
+          
           {stats?.username && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '5px 12px', borderRadius: '50px', border: '1px solid var(--glass-border)' }}>
-                Connecté en tant que <strong>{stats.username}</strong>
-              </span>
+            <div className="user-badge">
+              <div className="user-info">
+                <User size={14} />
+                <span className="mobile-hide">Connecté en tant que&nbsp;</span>
+                <strong>{stats.username}</strong>
+              </div>
               <button 
                 onClick={handleLogout}
-                style={{ background: 'transparent', border: 'none', color: '#ff4444', fontSize: '0.8rem', cursor: 'pointer', opacity: 0.7 }}
+                className="logout-btn"
+                title="Déconnexion"
+                style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer', opacity: 0.7, display: 'flex', alignItems: 'center', gap: '5px', padding: '5px' }}
                 onMouseEnter={e => e.currentTarget.style.opacity = '1'}
                 onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
               >
-                Déconnexion
+                <LogOut size={18} />
+                <span className="mobile-hide" style={{ fontSize: '0.8rem' }}>Déconnexion</span>
               </button>
             </div>
           )}
         </div>
         
         <div className="header-controls">
-          <div className="action-buttons">
-            <button 
-              className="btn btn-secondary" 
-              onClick={handleExport}
-              disabled={syncing || !stats}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px', 
-                background: `${themeColor}26`, // 26 is hex for 15% opacity
-                color: themeColor,
-                border: `1px solid ${themeColor}4d` // 4d is hex for 30% opacity
-              }}
-            >
-              <Share2 size={18} />
-              Partager
-            </button>
-            <button 
-              className="btn btn-secondary" 
-              onClick={() => fetchStats(true)} 
-              disabled={syncing}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
-              {syncing ? 'Synchronisation...' : 'Synchroniser'}
-            </button>
-          </div>
-
-          <div className="ambiance-selector">
-            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>Ambiance :</p>
+          <div className="ambiance-selector" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <p className="mobile-hide" style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>Ambiance :</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '5px 12px', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
               {PALETTES.map(p => (
                 <button
@@ -280,17 +258,45 @@ export default function Home() {
                     width: '18px',
                     height: '18px',
                     borderRadius: '50%',
-                    background: p.color,
-                    border: themeColor === p.color ? '2px solid white' : '2px solid transparent',
+                    backgroundColor: p.color,
+                    border: themeColor === p.color ? '2px solid white' : 'none',
                     cursor: 'pointer',
-                    padding: 0,
-                    transition: 'transform 0.2s'
+                    transition: 'transform 0.2s',
+                    padding: 0
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.3)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 />
               ))}
             </div>
+          </div>
+
+          <div className="action-buttons">
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => fetchStats(true)} 
+              disabled={syncing}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+              <span className="mobile-hide">{syncing ? 'Synchronisation...' : 'Synchroniser'}</span>
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={handleExport}
+              disabled={syncing || !stats}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                background: `${themeColor}26`, 
+                color: themeColor,
+                border: `1px solid ${themeColor}4d`
+              }}
+            >
+              <Share2 size={18} />
+              <span className="mobile-hide">Partager</span>
+            </button>
           </div>
         </div>
       </header>

@@ -37,12 +37,74 @@ body {
   overflow: hidden; /* Empêche les éléments internes de déborder */
 }
 
+@media (max-width: 768px) {
+  .dashboard {
+    padding-bottom: 100px; /* Espace pour la barre de navigation fixe */
+  }
+}
+
 h1 {
   font-size: 2.5rem;
   font-weight: 900;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   color: var(--text-primary);
   letter-spacing: -1px;
+}
+
+.main-header {
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 16px;
+  position: relative;
+}
+
+.main-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 60px; /* Petit trait d'accentuation plus marqué */
+  height: 2px;
+  background: var(--accent-green);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--accent-green);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-info {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.05);
+  padding: 5px 12px;
+  border-radius: 50px;
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
 }
 
 .kpi-grid {
@@ -67,7 +129,6 @@ h1 {
 .card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  border-color: rgba(29, 185, 84, 0.3);
 }
 
 .card::before {
@@ -79,7 +140,7 @@ h1 {
   height: 100%;
   background: var(--accent-green);
   opacity: 0.7;
-  border-radius: 16px 0 0 16px; /* Ajouté pour correspondre à la carte */
+  border-radius: 16px 0 0 16px;
 }
 
 .card-title {
@@ -241,5 +302,92 @@ h1 {
 
   .tooltip-container:hover .tooltip-text {
     transform: translateX(-50%) translateY(0);
+  }
+
+  .header-top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  .main-header h1 {
+    font-size: 2.5rem !important; /* Un peu plus grand sur mobile */
+    line-height: 1.1;
+  }
+
+  .user-badge {
+    gap: 10px;
+    padding-top: 2px;
+  }
+
+  .user-info {
+    padding: 6px 14px !important;
+    font-size: 0.9rem !important; /* Un peu plus grand */
+  }
+
+  .logout-btn {
+    padding: 4px !important;
+  }
+
+  .header-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    padding: 16px 20px;
+    z-index: 1000;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .action-buttons .btn {
+    padding: 8px !important;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 12px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ambiance-selector {
+    background: rgba(255,255,255,0.05) !important;
+    padding: 6px 10px !important;
+    border-radius: 12px !important;
+    flex-grow: 0;
+    margin: 0 !important;
+  }
+
+  .ambiance-selector p {
+    display: none !important;
+  }
+
+  .mobile-hide {
+    display: none;
+  }
+
+  /* Correction de l'animation pour permettre le position fixe du menu */
+  .animated {
+    animation: fadeInMobile 0.6s ease-out forwards !important;
+  }
+
+  @keyframes fadeInMobile {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
