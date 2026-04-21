@@ -40,7 +40,7 @@ body {
 
 @media (max-width: 768px) {
   .dashboard {
-    padding-bottom: 100px; /* Espace pour la barre de navigation fixe */
+    padding-bottom: 160px; /* Espace augmenté pour la barre de navigation fixe */
   }
 }
 
@@ -459,5 +459,18 @@ h1 {
   @keyframes fadeInMobile {
     from { opacity: 0; }
     to { opacity: 1; }
+  }
+
+  .chart-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+    text-align: center;
+  }
+
+  .section-badge-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 }
