@@ -197,6 +197,15 @@ export default function Home() {
     return `${hours}h ${minutes}min`;
   };
 
+  const formatDiffTime = (ms: number) => {
+    const totalMinutes = Math.floor(ms / (1000 * 60));
+    if (totalMinutes === 0) return '0min';
+    if (totalMinutes < 60) return `${totalMinutes}min`;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h${minutes > 0 ? ` ${minutes}min` : ''}`;
+  };
+
   const InfoTooltip = ({ text }: { text: string }) => (
     <span className="tooltip-container">
       <HelpCircle size={14} className="tooltip-icon" />
@@ -402,18 +411,18 @@ export default function Home() {
           <div className="card-value">{formatTime(stats?.today || 0)}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
             {stats?.yesterday !== undefined && stats.yesterday > 0 && (() => {
-              const diffToYesterday = ((stats.today - stats.yesterday) / stats.yesterday) * 100;
-              const isPos = diffToYesterday >= 0;
+              const diffMs = stats.today - stats.yesterday;
+              const isPos = diffMs >= 0;
               return (
                 <span style={{ 
                   fontSize: '0.85rem', 
                   fontWeight: 700, 
-                  color: isPos ? '#1ed760' : '#ff4d4d',
-                  background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 77, 77, 0.1)',
+                  color: isPos ? '#1ed760' : '#ff4444',
+                  background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
                   padding: '2px 8px',
                   borderRadius: '12px'
                 }}>
-                  {isPos ? '▲' : '▼'} {Math.abs(diffToYesterday).toFixed(0)}%
+                  {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
                 </span>
               );
             })()}
@@ -426,18 +435,18 @@ export default function Home() {
           <div className="card-value">{formatTime(weeklyTotalMs)}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
             {stats?.prevWeekTotal !== undefined && stats.prevWeekTotal > 0 && (() => {
-              const diffToPrev = ((weeklyTotalMs - stats.prevWeekTotal) / stats.prevWeekTotal) * 100;
-              const isPos = diffToPrev >= 0;
+              const diffMs = weeklyTotalMs - stats.prevWeekTotal;
+              const isPos = diffMs >= 0;
               return (
                 <span style={{ 
                   fontSize: '0.85rem', 
                   fontWeight: 700, 
-                  color: isPos ? '#1ed760' : '#ff4d4d',
-                  background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 77, 77, 0.1)',
+                  color: isPos ? '#1ed760' : '#ff4444',
+                  background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
                   padding: '2px 8px',
                   borderRadius: '12px'
                 }}>
-                  {isPos ? '▲' : '▼'} {Math.abs(diffToPrev).toFixed(0)}%
+                  {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
                 </span>
               );
             })()}
