@@ -1089,69 +1089,9 @@ export default function Home() {
             display: flex;
             justify-content: flex-start;
           }
-          
-          @media (max-width: 600px) {
-            .main-header {
-              text-align: center;
-              display: flex;
-              .filter-row-mobile {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                width: 100% !important;
-                margin-top: 4px !important;
-                gap: 8px !important;
-              }
-
-              .incomplete-badge-wrapper {
-                display: flex;
-                justify-content: center;
-                margin-top: 4px;
-                width: 100%;
-              }
-
-              .filter-bar-wrapper-mobile {
-                width: 100% !important;
-                flex: none !important;
-              }
-            }
-            column;
-              align-items: center;
-              width: 100%;
-            }
-            .action-buttons, .ambiance-selector {
-              justify-content: center;
-              width: 100%;
-            }
-            .section-header {
-              flex-direction: column;
-              text-align: center;
-            }
-            .chart-header {
-              flex-direction: column;
-              justify-content: center !important;
-              text-align: center;
-            }
-            .chart-header > div {
-              justify-content: center !important;
-            }
-            .section-badge-container {
-              width: 100%;
-              margin-bottom: 15px;
-              justify-content: center !important;
-            }
-            .chart-container {
-              padding: 15px !important;
-            }
-            .dashboard {
-              padding: 20px 10px !important;
-            }
-            .card {
-              padding: 15px !important;
-            }
-          }
 
           .main-header { margin-bottom: 50px; }
-          .header-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; width: 100%; }
+          .header-controls { display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; width: 100%; }
           .action-buttons { display: flex; gap: 12px; }
           .ambiance-selector { display: flex; align-items: center; gap: 15px; }
       `}</style>

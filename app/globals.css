@@ -351,6 +351,10 @@ h1 {
     --logo-wave-scale: 2.0; /* Rayon plus court sur mobile */
   }
 
+  .main-header {
+    padding-top: 25px;
+  }
+
   .tooltip-text {
     top: auto;
     bottom: 150%;
@@ -459,16 +463,6 @@ h1 {
   @keyframes fadeInMobile {
     from { opacity: 0; }
     to { opacity: 1; }
-  }
-
-  .main-header {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    padding-top: 50px !important;
-    margin-bottom: 30px !important;
   }
 
   .chart-header {
