@@ -50,6 +50,7 @@ function LoginForm() {
 
   return (
     <div style={{ background: 'var(--card-bg)', padding: '2.5rem', borderRadius: '24px', width: '100%', maxWidth: '450px', border: '1px solid var(--glass-border)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+      <img src="/logo.png" alt="Écho Logo" style={{ width: '80px', height: '80px', borderRadius: '20px', marginBottom: '1.5rem', objectFit: 'cover', margin: '0 auto' }} />
       <h1 style={{ marginBottom: '1rem', fontSize: '2.2rem', fontWeight: 800 }}>Écho</h1>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.95rem' }}>
         {isCodeValid ? 'Code validé ! Authentification requise pour continuer.' : 'Entrez votre code d\'invitation pour accéder au Club Privé.'}

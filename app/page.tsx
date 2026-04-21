@@ -221,7 +221,10 @@ export default function Home() {
     <main className="dashboard animated">
       <header className="main-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <h1 style={{ margin: 0 }}>Écho</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src="/logo.png" alt="Écho Logo" style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover' }} />
+            <h1 style={{ margin: 0 }}>Écho</h1>
+          </div>
           {stats?.username && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '5px 12px', borderRadius: '50px', border: '1px solid var(--glass-border)' }}>
