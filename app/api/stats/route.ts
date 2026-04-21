@@ -71,10 +71,23 @@ export async function GET(request: NextRequest) {
     const prevWeekTotal = prevWeekRes.rows[0]?.total_ms || 0;
 
     // 3. Chart Data Optimization (Single Query instead of loops)
-    let chartData = [];
     const labels = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
     const monthLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
+    // WEEKLY DATA (Always needed for the small activity chart)
+    const weekRes = await db.query(`
+      SELECT 
+        EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as dow,
+        SUM(duration_ms) as ms
+      FROM ecoutes
+      WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
+      GROUP BY dow
+    `, [userId, mondayUTS, endOfWeekUTS]);
+    
+    const dowMap = Object.fromEntries(weekRes.rows.map(r => [Math.floor(r.dow), Number(r.ms)]));
+    const weekData = labels.map((l, i) => ({ label: l, ms: dowMap[i + 1] || 0 }));
+
+    let chartData = [];
     if (chartPeriod === 'year') {
       const yearStartUTS = Math.floor(new Date(nowObj.getUTCFullYear(), 0, 1).getTime() / 1000);
       const yearEndUTS = Math.floor(new Date(nowObj.getUTCFullYear() + 1, 0, 1).getTime() / 1000);
@@ -96,7 +109,7 @@ export async function GET(request: NextRequest) {
       const monthStartUTS = Math.floor(monthStart.getTime() / 1000);
       const nextMonthStartUTS = Math.floor(new Date(nowObj.getFullYear(), nowObj.getMonth() + 1, 1).getTime() / 1000);
       
-      const monthRes = await db.query(`
+      const monthSelectRes = await db.query(`
         SELECT 
           FLOOR((EXTRACT(DAY FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') - 1) / 7) as week_idx,
           SUM(duration_ms) as ms
@@ -105,7 +118,7 @@ export async function GET(request: NextRequest) {
         GROUP BY week_idx
       `, [userId, monthStartUTS, nextMonthStartUTS]);
       
-      const weekMap = Object.fromEntries(monthRes.rows.map(r => [Math.floor(r.week_idx), Number(r.ms)]));
+      const weekMap = Object.fromEntries(monthSelectRes.rows.map(r => [Math.floor(r.week_idx), Number(r.ms)]));
       chartData = [
         { label: 'S1', ms: weekMap[0] || 0 },
         { label: 'S2', ms: weekMap[1] || 0 },
@@ -114,19 +127,7 @@ export async function GET(request: NextRequest) {
       ];
 
     } else {
-      // Weekly Chart (Default)
-      const weekRes = await db.query(`
-        SELECT 
-          EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as dow,
-          SUM(duration_ms) as ms
-        FROM ecoutes
-        WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-        GROUP BY dow
-      `, [userId, mondayUTS, endOfWeekUTS]);
-      
-      const dowMap = Object.fromEntries(weekRes.rows.map(r => [Math.floor(r.dow), Number(r.ms)]));
-      // ISODOW: 1=Mon, 7=Sun
-      chartData = labels.map((l, i) => ({ label: l, ms: dowMap[i + 1] || 0 }));
+      chartData = weekData;
     }
 
     // 4. Monthly totals (Optimized)
@@ -134,11 +135,11 @@ export async function GET(request: NextRequest) {
     const curMonthEndUTS = Math.floor(new Date(nowObj.getFullYear(), nowObj.getMonth() + 1, 1).getTime() / 1000);
     const prevMonthStartUTS = Math.floor(new Date(nowObj.getFullYear(), nowObj.getMonth() - 1, 1).getTime() / 1000);
     
-    const curMonthTotalRes = await db.query(`
+    const monthRes = await db.query(`
       SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
     `, [userId, curMonthStartUTS, curMonthEndUTS]);
 
-    const prevMonthTotalRes = await db.query(`
+    const prevMonthRes = await db.query(`
       SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
     `, [userId, prevMonthStartUTS, curMonthStartUTS]);
 
