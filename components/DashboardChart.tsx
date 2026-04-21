@@ -33,11 +33,14 @@ export default function DashboardChart({ data, color = '#1db954' }: DashboardCha
       chartInstance.current.data.datasets[0].hoverBackgroundColor = color;
       
       // Mise à jour des axes
-      chartInstance.current.options.scales!.y!.ticks!.stepSize = useHours ? 60 : undefined;
-      chartInstance.current.options.scales!.y!.ticks!.callback = function(value: any) {
-        if (useHours) return Math.round(value / 60) + ' h';
-        return value + ' min';
-      };
+      const yTicks = chartInstance.current.options.scales?.y?.ticks as any;
+      if (yTicks) {
+        yTicks.stepSize = useHours ? 60 : undefined;
+        yTicks.callback = function(value: any) {
+          if (useHours) return Math.round(value / 60) + ' h';
+          return value + ' min';
+        };
+      }
       
       chartInstance.current.update();
     } else if (chartRef.current) {
