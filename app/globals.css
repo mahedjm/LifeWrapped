@@ -464,8 +464,9 @@ h1 {
   .chart-header {
     flex-direction: column !important;
     align-items: center !important;
-    gap: 16px !important;
+    gap: 8px !important;
     text-align: center;
+    margin-bottom: 20px !important;
   }
 
   .section-badge-container {
@@ -478,7 +479,16 @@ h1 {
     flex-direction: column !important;
     align-items: stretch !important;
     width: 100% !important;
-    margin-top: 10px;
+    margin-top: 2px !important;
+    gap: 6px !important;
+  }
+
+  .incomplete-badge-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 4px auto 0 !important;
+    width: 100%;
+    text-align: center;
   }
 
   .filter-bar-wrapper-mobile {

@@ -685,23 +685,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* Rangée 2 : Contrôles */}
             <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {(period === 'month' || period === 'year') && stats?.firstEntryDate && (
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#ffb91d', 
-                    background: 'rgba(255, 185, 29, 0.1)', 
-                    padding: '2px 8px', 
-                    borderRadius: '10px',
-                    fontWeight: 500
-                  }}>
-                    (Période incomplète)
-                  </span>
-                )}
-              </div>
-            
               <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
                 <div style={{ 
                   display: 'flex', 
@@ -736,6 +720,20 @@ export default function Home() {
                   ))}
                 </div>
               </div>
+            </div>
+            <div className="incomplete-badge-wrapper">
+              {(period === 'month' || period === 'year') && stats?.firstEntryDate && (
+                <span style={{ 
+                  fontSize: '0.75rem', 
+                  color: '#ffb91d', 
+                  background: 'rgba(255, 185, 29, 0.1)', 
+                  padding: '2px 10px', 
+                  borderRadius: '12px',
+                  fontWeight: 500
+                }}>
+                  (Période incomplète)
+                </span>
+              )}
             </div>
           </div>
           <div 
@@ -863,21 +861,6 @@ export default function Home() {
             </div>
 
             <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {(trackPeriod === 'month' || trackPeriod === 'year') && stats?.firstEntryDate && (
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#ffb91d', 
-                    background: 'rgba(255, 185, 29, 0.1)', 
-                    padding: '2px 8px', 
-                    borderRadius: '10px',
-                    fontWeight: 500
-                  }}>
-                    (Période incomplète)
-                  </span>
-                )}
-              </div>
-            
               <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
                 <div style={{ 
                   display: 'flex', 
@@ -912,6 +895,21 @@ export default function Home() {
                   ))}
                 </div>
               </div>
+            </div>
+
+            <div className="incomplete-badge-wrapper">
+              {(trackPeriod === 'month' || trackPeriod === 'year') && stats?.firstEntryDate && (
+                <span style={{ 
+                  fontSize: '0.75rem', 
+                  color: '#ffb91d', 
+                  background: 'rgba(255, 185, 29, 0.1)', 
+                  padding: '2px 10px', 
+                  borderRadius: '12px',
+                  fontWeight: 500
+                }}>
+                  (Période incomplète)
+                </span>
+              )}
             </div>
           </div>
           <div 
@@ -1096,12 +1094,27 @@ export default function Home() {
             .main-header {
               text-align: center;
               display: flex;
-              flex-direction: column;
-              align-items: center;
-              margin-bottom: 30px !important;
+              .filter-row-mobile {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                width: 100% !important;
+                margin-top: 4px !important;
+                gap: 8px !important;
+              }
+
+              .incomplete-badge-wrapper {
+                display: flex;
+                justify-content: center;
+                margin-top: 4px;
+                width: 100%;
+              }
+
+              .filter-bar-wrapper-mobile {
+                width: 100% !important;
+                flex: none !important;
+              }
             }
-            .header-controls {
-              flex-direction: column;
+            column;
               align-items: center;
               width: 100%;
             }
