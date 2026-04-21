@@ -11,6 +11,7 @@ import { useRef } from 'react';
 import { Share2 } from 'lucide-react';
 
 interface Stats {
+  username?: string;
   today: number;
   weekly: { date: string; ms: number }[];
   monthly: number;
