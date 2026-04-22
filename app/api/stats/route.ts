@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     const trackPeriod = searchParams.get('trackPeriod') || 'month';
     const chartPeriod = searchParams.get('chartPeriod') || 'week';
     
-    const artistLimit = Math.min(100, Math.max(1, parseInt(searchParams.get('artistLimit') || '5', 10)));
-    const trackLimit = Math.min(100, Math.max(1, parseInt(searchParams.get('trackLimit') || '5', 10)));
+    const artistLimit = 100; // Force 100 for client-side optimization
+    const trackLimit = 100;  // Force 100 for client-side optimization
 
     if (sync) {
       const syncResult = await syncRecentlyPlayed(userId, username);
@@ -174,11 +174,12 @@ export async function GET(request: NextRequest) {
       SELECT 
         artist_name as artist, 
         SUM(duration_ms) as total_ms,
-        (SELECT image_url FROM artistes a WHERE a.name = artist_name) as image_url
+        (SELECT image_url FROM artistes a WHERE a.name = artist_name) as image_url,
+        MAX(played_at_uts) as last_played
       FROM ecoutes
       WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
       GROUP BY artist_name
-      ORDER BY total_ms DESC
+      ORDER BY total_ms DESC, last_played DESC, artist_name ASC
       LIMIT $4
     `, [userId, artistRange.start, artistRange.end, artistLimit]);
 
@@ -188,11 +189,12 @@ export async function GET(request: NextRequest) {
         track_name as title, 
         artist_name as artist, 
         image_url,
-        COUNT(*) as play_count
+        COUNT(*) as play_count,
+        MAX(played_at_uts) as last_played
       FROM ecoutes
       WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
       GROUP BY track_name, artist_name, image_url
-      ORDER BY play_count DESC
+      ORDER BY play_count DESC, last_played DESC, track_name ASC
       LIMIT $4
     `, [userId, trackRange.start, trackRange.end, trackLimit]);
 

@@ -8,7 +8,7 @@ import DashboardLineChart from '@/components/DashboardLineChart';
 import NowPlaying from '@/components/NowPlaying';
 import ShareCard from '@/components/ShareCard';
 import { useRef } from 'react';
-import { Share2, LogOut, User } from 'lucide-react';
+import { Share2, LogOut, User, Palette, Users } from 'lucide-react';
 
 interface Stats {
   username?: string;
@@ -55,6 +55,10 @@ export default function Home() {
   const [trackLimit, setTrackLimit] = useState<number>(5);
   const [showArtistLimit, setShowArtistLimit] = useState(false);
   const [showTrackLimit, setShowTrackLimit] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
+  const [showFriends, setShowFriends] = useState(false);
+  const [activeTab, setActiveTab] = useState('accueil');
 
   // Persistence du thème
   useEffect(() => {
@@ -176,10 +180,24 @@ export default function Home() {
     };
   }, []);
 
+  // Fermer les popups de la navbar au clic extérieur
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.bottom-nav')) {
+        setShowPalette(false);
+        setShowAccount(false);
+        setShowFriends(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     // Ajout d'un debounce de 300ms pour éviter de mitrailler le serveur
     const timer = setTimeout(() => {
-      fetchStats(false, period, trackPeriod, chartPeriod, artistLimit, trackLimit);
+      fetchStats(false, period, trackPeriod, chartPeriod);
     }, 300);
 
     return () => {
@@ -188,7 +206,7 @@ export default function Home() {
         abortControllerRef.current.abort();
       }
     };
-  }, [period, trackPeriod, chartPeriod, artistLimit, trackLimit]);
+  }, [period, trackPeriod, chartPeriod]);
 
   const formatTime = (ms: number) => {
     const totalMinutes = Math.floor(ms / (1000 * 60));
@@ -279,83 +297,73 @@ export default function Home() {
   return (
     <main className="dashboard animated">
       <header className="main-header">
-        <div className="header-top">
-          <div className="logo-container">
-            <div className="logo-wave" />
-            <div className="logo-wave" />
-            <div className="logo-wave" />
-            <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', position: 'relative', zIndex: 2 }}>Écho</h1>
+        {/* --- DESKTOP HEADER (Original) --- */}
+        <div className="desktop-only">
+          <div className="header-top">
+            <div className="logo-container">
+              <div className="logo-wave" />
+              <div className="logo-wave" />
+              <div className="logo-wave" />
+              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor, position: 'relative', zIndex: 2 }}>Écho</h1>
+            </div>
+            
+            {stats?.username && (
+              <div className="user-badge">
+                <div className="user-info">
+                  <User size={14} />
+                  <span>Connecté en tant que&nbsp;</span>
+                  <strong>{stats.username}</strong>
+                </div>
+                <button className="logout-btn" onClick={handleLogout}><LogOut size={18} /></button>
+              </div>
+            )}
           </div>
           
-          {stats?.username && (
-            <div className="user-badge">
-              <div className="user-info">
-                <User size={14} />
-                <span className="mobile-hide">Connecté en tant que&nbsp;</span>
-                <strong>{stats.username}</strong>
+          <div className="header-controls">
+            <div className="ambiance-selector" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>Ambiance :</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '5px 12px', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
+                {PALETTES.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setThemeColor(p.color)}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      backgroundColor: p.color,
+                      border: themeColor === p.color ? '2px solid white' : 'none',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s',
+                      padding: 0
+                    }}
+                  />
+                ))}
               </div>
-              <button 
-                className="logout-btn" 
-                onClick={handleLogout}
-              >
-                <LogOut size={18} />
+            </div>
+
+            <div className="action-buttons">
+              <button className="btn btn-secondary" onClick={() => fetchStats(true)} disabled={syncing} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+                <span>{syncing ? 'Synchronisation...' : 'Synchroniser'}</span>
+              </button>
+              <button className="btn btn-secondary" onClick={handleExport} disabled={syncing || !stats} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: `${themeColor}26`, color: themeColor, border: `1px solid ${themeColor}4d` }}>
+                <Share2 size={18} />
+                <span>Partager</span>
               </button>
             </div>
-          )}
-        </div>
-        
-        <div className="header-controls">
-          <div className="ambiance-selector" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <p className="mobile-hide" style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>Ambiance :</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '5px 12px', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
-              {PALETTES.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => setThemeColor(p.color)}
-                  title={p.name}
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    backgroundColor: p.color,
-                    border: themeColor === p.color ? '2px solid white' : 'none',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                    padding: 0
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                />
-              ))}
-            </div>
           </div>
+        </div>
 
-          <div className="action-buttons">
-            <button 
-              className="btn btn-secondary" 
-              onClick={() => fetchStats(true)} 
-              disabled={syncing}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
-              <span className="mobile-hide">{syncing ? 'Synchronisation...' : 'Synchroniser'}</span>
-            </button>
-            <button 
-              className="btn btn-secondary" 
-              onClick={handleExport}
-              disabled={syncing || !stats}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px', 
-                background: `${themeColor}26`, 
-                color: themeColor,
-                border: `1px solid ${themeColor}4d`
-              }}
-            >
-              <Share2 size={18} />
-              <span className="mobile-hide">Partager</span>
-            </button>
+        {/* --- MOBILE HEADER (New centered) --- */}
+        <div className="mobile-only">
+          <div className="header-top" style={{ marginBottom: '40px', justifyContent: 'center' }}>
+            <div className="logo-container" style={{ margin: 0 }}>
+              <div className="logo-wave" />
+              <div className="logo-wave" />
+              <div className="logo-wave" />
+              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor, position: 'relative', zIndex: 2 }}>Écho</h1>
+            </div>
           </div>
         </div>
       </header>
@@ -505,26 +513,41 @@ export default function Home() {
               <InfoTooltip text="Volume total d'écoute (en heures) cumulé sur la période sélectionnée." />
             </h3>
           </div>
-          <div style={{ display: 'flex', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '24px', border: '1px solid var(--glass-border)', overflowX: 'auto', maxWidth: '100%' }}>
-            {[ { id: 'week', label: 'Semaine' }, { id: 'month', label: 'Mois' }, { id: 'year', label: 'Année' } ].map(p => (
-              <button
-                key={p.id}
-                onClick={() => setChartPeriod(p.id as any)}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: '20px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: chartPeriod === p.id ? 'rgba(29, 185, 84, 0.1)' : 'transparent',
-                  color: chartPeriod === p.id ? 'var(--accent-green)' : 'var(--text-secondary)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
+          <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1, width: '100%' }}>
+            <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end', width: '100%' }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: '6px', 
+                background: 'rgba(255,255,255,0.05)', 
+                padding: '6px', 
+                borderRadius: '24px', 
+                border: '1px solid var(--glass-border)', 
+                width: '100%',
+                justifyContent: 'space-between'
+              }}>
+                {[ { id: 'week', label: 'Semaine' }, { id: 'month', label: 'Mois' }, { id: 'year', label: 'Année' } ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setChartPeriod(p.id as any)}
+                    style={{
+                      flex: 1,
+                      padding: '6px 16px',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: chartPeriod === p.id ? 'rgba(29, 185, 84, 0.1)' : 'transparent',
+                      color: chartPeriod === p.id ? 'var(--accent-green)' : 'var(--text-secondary)',
+                      transition: 'all 0.2s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
         <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -683,10 +706,26 @@ export default function Home() {
                   ))}
                 </div>
               )}
+              
+              <div className="incomplete-badge-wrapper desktop-only-inline" style={{ marginLeft: '12px', display: 'inline-flex' }}>
+                {(period === 'month' || period === 'year') && stats?.firstEntryDate && (
+                  <span style={{ 
+                    fontSize: '0.75rem', 
+                    color: '#ffb91d', 
+                    background: 'rgba(255, 185, 29, 0.1)', 
+                    padding: '2px 10px', 
+                    borderRadius: '12px',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    (Période incomplète)
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
+            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
+              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end' }}>
                 <div style={{ 
                   display: 'flex', 
                   gap: '6px', 
@@ -694,7 +733,7 @@ export default function Home() {
                   padding: '6px', 
                   borderRadius: '24px',
                   border: '1px solid var(--glass-border)',
-                  width: '100%',
+                  minWidth: '200px',
                   justifyContent: 'space-between'
                 }}>
                   {['week', 'month', 'year'].map(p => (
@@ -721,20 +760,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="incomplete-badge-wrapper">
-              {(period === 'month' || period === 'year') && stats?.firstEntryDate && (
-                <span style={{ 
-                  fontSize: '0.75rem', 
-                  color: '#ffb91d', 
-                  background: 'rgba(255, 185, 29, 0.1)', 
-                  padding: '2px 10px', 
-                  borderRadius: '12px',
-                  fontWeight: 500
-                }}>
-                  (Période incomplète)
-                </span>
-              )}
-            </div>
           </div>
           <div 
             className="scrollable-list" 
@@ -749,7 +774,7 @@ export default function Home() {
               transition: 'opacity 0.3s ease'
             }}
           >
-            {stats.topArtists.map((a, index) => {
+            {stats.topArtists.slice(0, artistLimit).map((a, index) => {
               const maxMs = stats.topArtists[0].total_ms;
               const percentage = (a.total_ms / maxMs) * 100;
               return (
@@ -793,9 +818,11 @@ export default function Home() {
                   </div>
                   
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
-                      <span style={{ fontWeight: 600 }}>{a.artist}</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{formatTime(a.total_ms)}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.95rem', gap: '15px' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{a.artist}</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                        {formatTime(a.total_ms)}
+                      </span>
                     </div>
                     <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{ 
@@ -858,10 +885,26 @@ export default function Home() {
                   ))}
                 </div>
               )}
+
+              <div className="incomplete-badge-wrapper desktop-only-inline" style={{ marginLeft: '12px', display: 'inline-flex' }}>
+                {(trackPeriod === 'month' || trackPeriod === 'year') && stats?.firstEntryDate && (
+                  <span style={{ 
+                    fontSize: '0.75rem', 
+                    color: '#ffb91d', 
+                    background: 'rgba(255, 185, 29, 0.1)', 
+                    padding: '2px 10px', 
+                    borderRadius: '12px',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    (Période incomplète)
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
+            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
+              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end' }}>
                 <div style={{ 
                   display: 'flex', 
                   gap: '6px', 
@@ -869,7 +912,7 @@ export default function Home() {
                   padding: '6px', 
                   borderRadius: '24px',
                   border: '1px solid var(--glass-border)',
-                  width: '100%',
+                  minWidth: '200px',
                   justifyContent: 'space-between'
                 }}>
                   {['week', 'month', 'year'].map(p => (
@@ -896,21 +939,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
-            <div className="incomplete-badge-wrapper">
-              {(trackPeriod === 'month' || trackPeriod === 'year') && stats?.firstEntryDate && (
-                <span style={{ 
-                  fontSize: '0.75rem', 
-                  color: '#ffb91d', 
-                  background: 'rgba(255, 185, 29, 0.1)', 
-                  padding: '2px 10px', 
-                  borderRadius: '12px',
-                  fontWeight: 500
-                }}>
-                  (Période incomplète)
-                </span>
-              )}
-            </div>
           </div>
           <div 
             className="scrollable-list" 
@@ -925,7 +953,7 @@ export default function Home() {
               transition: 'opacity 0.3s ease'
             }}
           >
-            {stats.topTracks.map((t, index) => {
+            {stats.topTracks.slice(0, trackLimit).map((t, index) => {
               const maxCount = stats.topTracks[0].play_count;
               const percentage = (t.play_count / maxCount) * 100;
               return (
@@ -968,13 +996,13 @@ export default function Home() {
                     </div>
                   </div>
                   
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', gap: '10px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', maxWidth: '70%', overflow: 'hidden' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontSize: '0.95rem', gap: '15px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
                         <span style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</span>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.artist}</span>
                       </div>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
                         {t.play_count} {t.play_count > 1 ? 'écoutes' : 'écoute'}
                       </span>
                     </div>
@@ -994,6 +1022,137 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Floating Action Buttons */}
+      <div className="floating-actions">
+        <button 
+          className="fab fab-sync" 
+          onClick={() => fetchStats(true)} 
+          disabled={syncing}
+          title="Synchroniser"
+        >
+          <RefreshCw size={22} className={syncing ? 'animate-spin' : ''} />
+        </button>
+        <button 
+          className="fab fab-share" 
+          onClick={handleExport}
+          disabled={syncing || !stats}
+          title="Partager"
+        >
+          <Share2 size={22} />
+        </button>
+      </div>
+
+      {/* Bottom Navigation Bar */}
+      <nav className="bottom-nav">
+        <div 
+          className={`nav-item ${activeTab === 'accueil' ? 'active' : ''}`}
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setActiveTab('accueil');
+          }}
+        >
+          <div className="icon-wrapper">
+            <Music size={24} />
+          </div>
+          <span>Accueil</span>
+        </div>
+
+        <div 
+          className={`nav-item ${showPalette ? 'active' : ''}`}
+          onClick={() => {
+            setShowPalette(!showPalette);
+            setShowAccount(false);
+            setShowFriends(false);
+          }}
+        >
+          <div className="icon-wrapper">
+            <Palette size={24} />
+          </div>
+          <span>Thème</span>
+        </div>
+
+        <div 
+          className={`nav-item ${showFriends ? 'active' : ''}`}
+          onClick={() => {
+            setShowFriends(!showFriends);
+            setShowPalette(false);
+            setShowAccount(false);
+          }}
+        >
+          <div className="icon-wrapper">
+            <Users size={24} />
+          </div>
+          <span>Amis</span>
+        </div>
+
+        <div 
+          className={`nav-item ${showAccount ? 'active' : ''}`}
+          onClick={() => {
+            setShowAccount(!showAccount);
+            setShowPalette(false);
+            setShowFriends(false);
+          }}
+        >
+          <div className="icon-wrapper">
+            <User size={24} />
+          </div>
+          <span>Compte</span>
+        </div>
+
+        {/* Floating Centered Popups */}
+        {showPalette && (
+          <div className="palette-popup" onClick={(e) => e.stopPropagation()}>
+            {PALETTES.map(p => (
+              <button
+                key={p.id}
+                onClick={() => {
+                  setThemeColor(p.color);
+                  setShowPalette(false);
+                }}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  backgroundColor: p.color,
+                  border: themeColor === p.color ? '2px solid white' : 'none',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s'
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {showFriends && (
+          <div className="palette-popup" style={{ gap: '10px', padding: '15px 25px' }} onClick={(e) => e.stopPropagation()}>
+            <Clock size={20} className="animate-pulse" style={{ color: 'var(--accent-green)' }} />
+            <span style={{ color: 'white', fontWeight: 600, fontSize: '0.95rem' }}>Coming soon...</span>
+          </div>
+        )}
+
+        {showAccount && stats?.username && (
+          <div className="palette-popup" style={{ flexDirection: 'column', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem' }}>@{stats.username}</div>
+            <button 
+              onClick={handleLogout}
+              style={{ 
+                background: 'rgba(255, 68, 68, 0.1)', 
+                color: '#ff4444', 
+                border: '1px solid rgba(255, 68, 68, 0.2)', 
+                padding: '10px 20px', 
+                borderRadius: '12px', 
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                width: '100%',
+                cursor: 'pointer'
+              }}
+            >
+              Déconnexion
+            </button>
+          </div>
+        )}
+      </nav>
 
       <style jsx>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -1039,9 +1198,11 @@ export default function Home() {
           color: var(--text-secondary);
           transition: background 0.2s;
         }
-        .custom-select-item:hover {
-          background: rgba(255,255,255,0.1);
-          color: white;
+        @media (hover: hover) {
+          .custom-select-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+          }
         }
         .custom-select-item.active {
           color: var(--accent-green);
@@ -1074,26 +1235,7 @@ export default function Home() {
           display: none; 
         }
 
-          .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 25px;
-          }
-          .chart-header > div {
-            justify-content: flex-start;
-          }
-          .section-badge-container {
-            display: flex;
-            justify-content: flex-start;
-          }
-
-          .main-header { margin-bottom: 50px; }
-          .header-controls { display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; width: 100%; }
-          .action-buttons { display: flex; gap: 12px; }
-          .ambiance-selector { display: flex; align-items: center; gap: 15px; }
+          /* Note: Mobile layout is handled in globals.css for better maintainability */
       `}</style>
     </main>
   );

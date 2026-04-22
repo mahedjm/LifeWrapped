@@ -1,6 +1,7 @@
 'use client';
 
 import { Music } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface NowPlayingProps {
   track: {
@@ -12,6 +13,25 @@ interface NowPlayingProps {
 }
 
 export default function NowPlaying({ track }: NowPlayingProps) {
+  const [currentImage, setCurrentImage] = useState<string | null>(track?.image || null);
+  const [prevImage, setPrevImage] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    if (track?.image && track.image !== currentImage) {
+      setPrevImage(currentImage);
+      setCurrentImage(track.image);
+      setIsTransitioning(true);
+      
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        setPrevImage(null);
+      }, 600);
+
+      return () => clearTimeout(timer);
+    }
+  }, [track?.image]);
+
   if (!track) return null;
 
   return (
@@ -54,41 +74,72 @@ export default function NowPlaying({ track }: NowPlayingProps) {
           to { transform: translateY(0); opacity: 1; }
         }
 
-        .album-art-wrapper {
+        .art-container {
           position: relative;
           width: 80px;
           height: 80px;
           flex-shrink: 0;
         }
 
-        .album-art {
+        .album-art-wrapper {
+          position: relative;
           width: 100%;
           height: 100%;
+          overflow: hidden;
           border-radius: 8px;
-          object-fit: cover;
           box-shadow: 0 8px 16px rgba(0,0,0,0.3);
           z-index: 2;
-          position: relative;
+        }
+
+        .album-art {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          z-index: 2;
+        }
+
+        .album-art.new {
+          animation: fadeIn 0.6s ease-in-out forwards;
+          z-index: 3;
+        }
+
+        .album-art.old {
+          animation: fadeOut 0.6s ease-in-out forwards;
+          z-index: 2;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(1.1); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes fadeOut {
+          from { opacity: 1; transform: scale(1); }
+          to { opacity: 0; transform: scale(0.95); }
         }
 
         .live-badge {
           position: absolute;
-          top: -10px;
-          right: -10px;
+          top: -8px;
+          right: -8px;
           background: #e91e63;
           color: white;
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           font-weight: 800;
           padding: 2px 8px;
           border-radius: 10px;
           z-index: 10;
           letter-spacing: 1px;
+          box-shadow: 0 4px 10px rgba(233, 30, 99, 0.4);
           animation: blink 1s infinite;
         }
 
         @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(0.95); }
         }
 
         .track-info {
@@ -140,15 +191,28 @@ export default function NowPlaying({ track }: NowPlayingProps) {
         .bar:nth-child(5) { animation-delay: 0.3s; }
       `}</style>
 
-      <div className="album-art-wrapper">
+      <div className="art-container">
         <div className="live-badge">LIVE</div>
-        {track.image ? (
-          <img src={track.image} alt={track.album} className="album-art" />
-        ) : (
-          <div className="album-art" style={{ background: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Music size={30} color="#555" />
-          </div>
-        )}
+        <div className="album-art-wrapper">
+          {/* Image Précédente */}
+          {prevImage && (
+            <img src={prevImage} alt="previous" className="album-art old" />
+          )}
+
+          {/* Image Actuelle */}
+          {currentImage ? (
+            <img 
+              key={currentImage} 
+              src={currentImage} 
+              alt={track.album} 
+              className={`album-art ${isTransitioning ? 'new' : ''}`} 
+            />
+          ) : (
+            <div className="album-art" style={{ background: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Music size={30} color="#555" />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="track-info">
