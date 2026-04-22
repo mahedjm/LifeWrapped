@@ -72,8 +72,10 @@ export default function Home() {
   // Suppression de l'ancien useEffect redondant
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--accent-green', themeColor);
-    localStorage.setItem('lw-theme-color', themeColor);
+    if (themeColor) {
+      document.documentElement.style.setProperty('--accent-green', themeColor);
+      localStorage.setItem('lw-theme-color', themeColor);
+    }
   }, [themeColor]);
 
   const fetchStats = async (
