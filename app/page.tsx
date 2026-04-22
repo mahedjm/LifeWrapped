@@ -281,11 +281,18 @@ export default function Home() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-dark)' }}>
-        <div className="logo-container" style={{ transform: 'scale(1.5)' }}>
+        <div className="logo-container rainbow" style={{ transform: 'scale(1.5)' }}>
           <div className="logo-wave" />
           <div className="logo-wave" />
           <div className="logo-wave" />
-          <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #1DB954, #00c9ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', position: 'relative', zIndex: 2 }}>Écho</h1>
+          <div className="logo-wave" />
+          <h1 style={{ 
+            margin: 0, 
+            fontWeight: 900, 
+            letterSpacing: '-0.5px', 
+            position: 'relative', 
+            zIndex: 2
+          }}>Écho</h1>
         </div>
       </div>
     );

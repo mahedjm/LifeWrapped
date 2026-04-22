@@ -457,9 +457,83 @@ h1 {
   .floating-actions, .bottom-nav { display: flex !important; }
 }
 
-@media (min-width: 1024px) {
-  .floating-actions, .bottom-nav { display: none !important; }
+/* Sophisticated Rainbow Reveal Animation (8s cycle) */
+@keyframes rainbowReveal {
+  /* Green Pulse (0s - 2s) */
+  0%   { opacity: 0; color: #1DB954; transform: scale(0.95); }
+  5%   { opacity: 1; color: #1DB954; transform: scale(1); }
+  20%  { opacity: 0; color: #1DB954; transform: scale(1.05); }
+  
+  /* Switch to Red while hidden */
+  24.9% { color: #1DB954; }
+  
+  /* Red Pulse (2s - 4s) */
+  25%  { opacity: 0; color: #FC3C44; transform: scale(0.95); }
+  30%  { opacity: 1; color: #FC3C44; transform: scale(1); }
+  45%  { opacity: 0; color: #FC3C44; transform: scale(1.05); }
+
+  /* Switch to Purple while hidden */
+  49.9% { color: #FC3C44; }
+
+  /* Purple Pulse (4s - 6s) */
+  50%  { opacity: 0; color: #A238FF; transform: scale(0.95); }
+  55%  { opacity: 1; color: #A238FF; transform: scale(1); }
+  70%  { opacity: 0; color: #A238FF; transform: scale(1.05); }
+
+  /* Switch to Blue while hidden */
+  74.9% { color: #A238FF; }
+
+  /* Blue Pulse (6s - 8s) */
+  75%  { opacity: 0; color: #00D2FF; transform: scale(0.95); }
+  80%  { opacity: 1; color: #00D2FF; transform: scale(1); }
+  95%  { opacity: 0; color: #00D2FF; transform: scale(1.05); }
+  
+  /* Back to Green while hidden */
+  99.9% { color: #00D2FF; }
+  100% { opacity: 0; color: #1DB954; }
 }
+
+@keyframes waveReveal {
+  0%   { border-color: #1DB954; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  5%   { opacity: 0.6; }
+  25%  { border-color: #1DB954; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes waveRevealRed {
+  0%   { border-color: #FC3C44; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  5%   { opacity: 0.6; }
+  25%  { border-color: #FC3C44; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes waveRevealPurple {
+  0%   { border-color: #A238FF; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  5%   { opacity: 0.6; }
+  25%  { border-color: #A238FF; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes waveRevealBlue {
+  0%   { border-color: #00D2FF; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  5%   { opacity: 0.6; }
+  25%  { border-color: #00D2FF; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.logo-container.rainbow h1 {
+  animation: rainbowReveal 8s infinite linear !important;
+  opacity: 0; /* Hidden by default */
+}
+
+.logo-container.rainbow .logo-wave {
+  animation: none !important; /* Reset default */
+}
+
+.logo-container.rainbow .logo-wave:nth-child(1) { animation: waveReveal 8s infinite linear !important; animation-delay: 0s !important; }
+.logo-container.rainbow .logo-wave:nth-child(2) { animation: waveRevealRed 8s infinite linear !important; animation-delay: 2s !important; }
+.logo-container.rainbow .logo-wave:nth-child(3) { animation: waveRevealPurple 8s infinite linear !important; animation-delay: 4s !important; }
+.logo-container.rainbow .logo-wave:nth-child(4) { animation: waveRevealBlue 8s infinite linear !important; animation-delay: 6s !important; }
 
 .fab {
   width: 52px;

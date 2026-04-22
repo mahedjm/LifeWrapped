@@ -69,7 +69,8 @@ function LoginForm() {
 
   return (
     <div style={{ background: 'var(--card-bg)', padding: '2.5rem', borderRadius: '24px', width: '100%', maxWidth: '450px', border: '1px solid var(--glass-border)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
-      <div className="logo-container" style={{ marginBottom: '2.5rem' }}>
+      <div className="logo-container rainbow" style={{ marginBottom: '2.5rem' }}>
+        <div className="logo-wave" />
         <div className="logo-wave" />
         <div className="logo-wave" />
         <div className="logo-wave" />
@@ -78,10 +79,6 @@ function LoginForm() {
           fontSize: '3rem', 
           fontWeight: 900, 
           letterSpacing: '-1px', 
-          background: 'linear-gradient(135deg, #1DB954, #00c9ff)', 
-          WebkitBackgroundClip: 'text', 
-          WebkitTextFillColor: 'transparent', 
-          backgroundClip: 'text',
           position: 'relative',
           zIndex: 2 
         }}>Écho</h1>
