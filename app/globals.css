@@ -40,6 +40,15 @@ TABLE OF CONTENTS
   --font-main: var(--font-sora), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 /* -------------------------------------------------------------
    2. RESET & BASE STYLES
 ------------------------------------------------------------- */
@@ -546,7 +555,9 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--accent-green), transparent 90%);
+  color: var(--accent-green);
+  border: 1px solid color-mix(in srgb, var(--accent-green), transparent 80%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   cursor: pointer;
@@ -556,6 +567,40 @@ h1 {
 
 .fab:active {
   transform: scale(0.9);
+}
+
+.fab-sync-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sync-label {
+  position: absolute;
+  right: 65px;
+  background: color-mix(in srgb, var(--accent-green), transparent 90%);
+  color: var(--accent-green);
+  padding: 0 20px;
+  height: 52px;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid color-mix(in srgb, var(--accent-green), transparent 80%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  animation: syncLabelSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes syncLabelSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @media (hover: hover) {

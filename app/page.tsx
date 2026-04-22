@@ -66,6 +66,7 @@ export default function Home() {
   const [showAccount, setShowAccount] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
   const [loadingChart, setLoadingChart] = useState(false);
+  const [manualSyncing, setManualSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('accueil');
 
   // Suppression de l'ancien useEffect redondant
@@ -81,7 +82,8 @@ export default function Home() {
     currentTrackPeriod = trackPeriod, 
     currentChartPeriod = chartPeriod,
     currentArtistLimit = artistLimit,
-    currentTrackLimit = trackLimit
+    currentTrackLimit = trackLimit,
+    isManual = false
   ) => {
     // Annulation de la requête précédente si elle existe encore
     if (abortControllerRef.current) {
@@ -93,6 +95,7 @@ export default function Home() {
     abortControllerRef.current = controller;
 
     if (sync) setSyncing(true);
+    if (isManual) setManualSyncing(true);
     try {
       console.log('Fetching stats...', { currentArtistPeriod, currentTrackPeriod, currentChartPeriod });
       const url = new URL('/api/stats', window.location.origin);
@@ -136,6 +139,7 @@ export default function Home() {
         setLoading(false);
         setSyncing(false);
         setLoadingChart(false);
+        setManualSyncing(false);
       }
     }
   };
@@ -576,7 +580,7 @@ export default function Home() {
                       fontWeight: 600,
                       border: 'none',
                       cursor: 'pointer',
-                      background: chartPeriod === p.id ? 'rgba(29, 185, 84, 0.1)' : 'transparent',
+                      background: chartPeriod === p.id ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent',
                       color: chartPeriod === p.id ? 'var(--accent-green)' : 'var(--text-secondary)',
                       transition: 'all 0.2s ease',
                       whiteSpace: 'nowrap'
@@ -787,7 +791,7 @@ export default function Home() {
                         fontWeight: 600,
                         border: 'none',
                         cursor: 'pointer',
-                        background: period === p ? 'color-mix(in srgb, var(--accent-green), transparent 90%)' : 'transparent',
+                        background: period === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent',
                         color: period === p ? 'var(--accent-green)' : 'var(--text-secondary)',
                         transition: 'all 0.2s ease',
                         whiteSpace: 'nowrap'
@@ -966,7 +970,7 @@ export default function Home() {
                         fontWeight: 600,
                         border: 'none',
                         cursor: 'pointer',
-                        background: trackPeriod === p ? 'color-mix(in srgb, var(--accent-green), transparent 90%)' : 'transparent',
+                        background: trackPeriod === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent',
                         color: trackPeriod === p ? 'var(--accent-green)' : 'var(--text-secondary)',
                         transition: 'all 0.2s ease',
                         whiteSpace: 'nowrap'
@@ -1065,14 +1069,6 @@ export default function Home() {
       {/* Floating Action Buttons */}
       <div className="floating-actions">
         <button 
-          className="fab fab-sync" 
-          onClick={() => fetchStats(true)} 
-          disabled={syncing}
-          title="Synchroniser"
-        >
-          <RefreshCw size={22} className={syncing ? 'animate-spin' : ''} />
-        </button>
-        <button 
           className="fab fab-share" 
           onClick={handleExport}
           disabled={syncing || !stats}
@@ -1080,6 +1076,17 @@ export default function Home() {
         >
           <Share2 size={22} />
         </button>
+        <div className="fab-sync-wrapper">
+          {manualSyncing && <span className="sync-label">Synchronisation...</span>}
+          <button 
+            className="fab fab-sync" 
+            onClick={() => fetchStats(true, period, trackPeriod, chartPeriod, artistLimit, trackLimit, true)} 
+            disabled={syncing}
+            title="Synchroniser"
+          >
+            <RefreshCw size={22} className={syncing ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* Bottom Navigation Bar */}
