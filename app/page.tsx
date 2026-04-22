@@ -8,7 +8,7 @@ import DashboardLineChart from '@/components/DashboardLineChart';
 import NowPlaying from '@/components/NowPlaying';
 import ShareCard from '@/components/ShareCard';
 import { useRef } from 'react';
-import { Share2, LogOut, User, Palette, Users } from 'lucide-react';
+import { Share2, LogOut, User, Palette, Users, Bell } from 'lucide-react';
 
 interface Stats {
   username?: string;
@@ -68,6 +68,11 @@ export default function Home() {
   const [loadingChart, setLoadingChart] = useState(false);
   const [manualSyncing, setManualSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('accueil');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'Bienvenue sur Écho !', message: 'Découvrez vos statistiques musicales en temps réel.', date: 'Maintenant', read: false },
+    { id: 2, title: 'Nouvelle mise à jour', message: 'Le système de notifications est arrivé.', date: 'Aujourd\'hui', read: false }
+  ]);
 
   // Suppression de l'ancien useEffect redondant
 
@@ -338,13 +343,33 @@ export default function Home() {
             </div>
             
             {stats?.username && (
-              <div className="user-badge">
-                <div className="user-info">
-                  <User size={14} />
-                  <span>Connecté en tant que&nbsp;</span>
-                  <strong>{stats.username}</strong>
+              <div className="header-controls">
+                <div className="notif-wrapper" style={{ marginRight: '10px' }}>
+                  <button 
+                    className="notif-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowNotifications(!showNotifications);
+                      if (!showNotifications) {
+                        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                      }
+                    }}
+                  >
+                    <Bell size={20} />
+                    {notifications.some(n => !n.read) && <div className="notif-badge" />}
+                  </button>
+                  
+                  
                 </div>
-                <button className="logout-btn" onClick={handleLogout}><LogOut size={18} /></button>
+
+                <div className="user-badge">
+                  <div className="user-info">
+                    <User size={14} />
+                    <span>Connecté en tant que&nbsp;</span>
+                    <strong>{stats.username}</strong>
+                  </div>
+                  <button className="logout-btn" onClick={handleLogout}><LogOut size={18} /></button>
+                </div>
               </div>
             )}
           </div>
@@ -1120,19 +1145,18 @@ export default function Home() {
           <span>Thème</span>
         </div>
 
-        <div 
-          className={`nav-item ${showFriends ? 'active' : ''}`}
-          onClick={() => {
-            setShowFriends(!showFriends);
-            setShowPalette(false);
-            setShowAccount(false);
-          }}
-        >
-          <div className="icon-wrapper">
-            <Users size={24} />
-          </div>
+        <button className={`nav-item ${showFriends ? 'active' : ''}`} onClick={() => { setShowFriends(true); setActiveTab('amis'); setShowPalette(false); setShowAccount(false); setShowNotifications(false); }}>
+          <Users size={24} color={showFriends ? 'var(--accent-green)' : 'var(--text-secondary)'} />
           <span>Amis</span>
-        </div>
+        </button>
+
+        <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); setShowPalette(false); setShowFriends(false); setShowAccount(false); if(!showNotifications) setNotifications(prev => prev.map(n => ({...n, read: true}))); }}>
+          <div style={{ position: 'relative' }}>
+            <Bell size={24} color={showNotifications ? 'var(--accent-green)' : 'var(--text-secondary)'} />
+            {notifications.some(n => !n.read) && <div className="notif-badge" style={{ top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'red', borderRadius: '50%', position: 'absolute' }} />}
+          </div>
+          <span>Notifications</span>
+        </button>
 
         <div 
           className={`nav-item ${showAccount ? 'active' : ''}`}
@@ -1285,6 +1309,21 @@ export default function Home() {
 
           /* Note: Mobile layout is handled in globals.css for better maintainability */
       `}</style>
+      {showNotifications && (
+        <div className="notif-dropdown">
+          <div className="notif-header">
+            <h4 style={{ margin: 0 }}>Notifications</h4>
+            <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>{notifications.length} message(s)</span>
+          </div>
+          {notifications.map(n => (
+            <div key={n.id} className={`notif-item ${!n.read ? 'new' : ''}`}>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>{n.title}</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '4px' }}>{n.message}</div>
+              <div style={{ fontSize: '0.7rem', opacity: 0.4 }}>{n.date}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
