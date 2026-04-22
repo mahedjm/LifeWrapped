@@ -582,7 +582,7 @@ export default function Home() {
                       fontWeight: 600,
                       border: 'none',
                       cursor: 'pointer',
-                      background: chartPeriod === p.id ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent',
+                      background: chartPeriod === p.id ? `color-mix(in srgb, ${themeColor || '#1DB954'}, transparent 90%)` : 'transparent',
                       color: chartPeriod === p.id ? 'var(--accent-green)' : 'var(--text-secondary)',
                       transition: 'all 0.2s ease',
                       whiteSpace: 'nowrap'
@@ -597,7 +597,7 @@ export default function Home() {
         </div>
         <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {hasData && stats?.chartData ? (
-            <DashboardChart data={stats.chartData} color={themeColor} />
+            <DashboardChart data={stats.chartData} color={themeColor || '#1DB954'} />
           ) : (
             <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
               <Music size={40} style={{ marginBottom: '10px', opacity: 0.3 }} />
