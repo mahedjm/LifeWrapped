@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     
     const artistLimit = 100; // Force 100 for client-side optimization
     const trackLimit = 100;  // Force 100 for client-side optimization
+    const partial = searchParams.get('partial');
 
     if (sync) {
       const syncResult = await syncRecentlyPlayed(userId, username);
@@ -128,6 +129,10 @@ export async function GET(request: NextRequest) {
 
     } else {
       chartData = weekData;
+    }
+
+    if (partial === 'chart') {
+      return NextResponse.json({ chartData });
     }
 
     // 4. Monthly totals (Optimized)

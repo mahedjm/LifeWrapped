@@ -460,64 +460,68 @@ h1 {
 /* Sophisticated Rainbow Reveal Animation (8s cycle) */
 @keyframes rainbowReveal {
   /* Green Pulse (0s - 2s) */
-  0%   { opacity: 0; color: #1DB954; transform: scale(0.95); }
-  5%   { opacity: 1; color: #1DB954; transform: scale(1); }
-  20%  { opacity: 0; color: #1DB954; transform: scale(1.05); }
+  0%   { opacity: 0; color: #169c46; transform: scale(0.97); }
+  10%  { opacity: 0.85; color: #169c46; transform: scale(1); }
+  15%  { opacity: 0.85; color: #169c46; transform: scale(1); }
+  25%  { opacity: 0; color: #169c46; transform: scale(1.03); }
   
   /* Switch to Red while hidden */
-  24.9% { color: #1DB954; }
+  24.9% { color: #169c46; }
   
   /* Red Pulse (2s - 4s) */
-  25%  { opacity: 0; color: #FC3C44; transform: scale(0.95); }
-  30%  { opacity: 1; color: #FC3C44; transform: scale(1); }
-  45%  { opacity: 0; color: #FC3C44; transform: scale(1.05); }
+  25%  { opacity: 0; color: #d6333a; transform: scale(0.97); }
+  35%  { opacity: 0.85; color: #d6333a; transform: scale(1); }
+  40%  { opacity: 0.85; color: #d6333a; transform: scale(1); }
+  50%  { opacity: 0; color: #d6333a; transform: scale(1.03); }
 
   /* Switch to Purple while hidden */
-  49.9% { color: #FC3C44; }
+  49.9% { color: #d6333a; }
 
   /* Purple Pulse (4s - 6s) */
-  50%  { opacity: 0; color: #A238FF; transform: scale(0.95); }
-  55%  { opacity: 1; color: #A238FF; transform: scale(1); }
-  70%  { opacity: 0; color: #A238FF; transform: scale(1.05); }
+  50%  { opacity: 0; color: #8a2ed9; transform: scale(0.97); }
+  60%  { opacity: 0.85; color: #8a2ed9; transform: scale(1); }
+  65%  { opacity: 0.85; color: #8a2ed9; transform: scale(1); }
+  75%  { opacity: 0; color: #8a2ed9; transform: scale(1.03); }
 
   /* Switch to Blue while hidden */
-  74.9% { color: #A238FF; }
+  74.9% { color: #8a2ed9; }
 
   /* Blue Pulse (6s - 8s) */
-  75%  { opacity: 0; color: #00D2FF; transform: scale(0.95); }
-  80%  { opacity: 1; color: #00D2FF; transform: scale(1); }
-  95%  { opacity: 0; color: #00D2FF; transform: scale(1.05); }
+  75%  { opacity: 0; color: #00b2db; transform: scale(0.97); }
+  85%  { opacity: 0.85; color: #00b2db; transform: scale(1); }
+  90%  { opacity: 0.85; color: #00b2db; transform: scale(1); }
+  100% { opacity: 0; color: #00b2db; transform: scale(1.03); }
   
   /* Back to Green while hidden */
-  99.9% { color: #00D2FF; }
-  100% { opacity: 0; color: #1DB954; }
+  99.9% { color: #00b2db; }
+  100% { opacity: 0; color: #169c46; }
 }
 
 @keyframes waveReveal {
-  0%   { border-color: #1DB954; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  5%   { opacity: 0.6; }
-  25%  { border-color: #1DB954; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  0%   { border-color: #169c46; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  10%  { opacity: 0.4; }
+  25%  { border-color: #169c46; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
   100% { opacity: 0; }
 }
 
 @keyframes waveRevealRed {
-  0%   { border-color: #FC3C44; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  5%   { opacity: 0.6; }
-  25%  { border-color: #FC3C44; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  0%   { border-color: #d6333a; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  10%  { opacity: 0.4; }
+  25%  { border-color: #d6333a; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
   100% { opacity: 0; }
 }
 
 @keyframes waveRevealPurple {
-  0%   { border-color: #A238FF; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  5%   { opacity: 0.6; }
-  25%  { border-color: #A238FF; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  0%   { border-color: #8a2ed9; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  10%  { opacity: 0.4; }
+  25%  { border-color: #8a2ed9; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
   100% { opacity: 0; }
 }
 
 @keyframes waveRevealBlue {
-  0%   { border-color: #00D2FF; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  5%   { opacity: 0.6; }
-  25%  { border-color: #00D2FF; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+  0%   { border-color: #00b2db; transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  10%  { opacity: 0.4; }
+  25%  { border-color: #00b2db; transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
   100% { opacity: 0; }
 }
 

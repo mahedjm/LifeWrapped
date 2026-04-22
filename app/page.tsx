@@ -58,6 +58,7 @@ export default function Home() {
   const [showPalette, setShowPalette] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
+  const [loadingChart, setLoadingChart] = useState(false);
   const [activeTab, setActiveTab] = useState('accueil');
 
   // Persistence du thème
@@ -99,6 +100,12 @@ export default function Home() {
       url.searchParams.set('artistLimit', currentArtistLimit.toString());
       url.searchParams.set('trackLimit', currentTrackLimit.toString());
       
+      const isChartOnly = currentChartPeriod !== chartPeriod && currentArtistPeriod === period && currentTrackPeriod === trackPeriod && !sync;
+      if (isChartOnly) {
+        url.searchParams.set('partial', 'chart');
+        setLoadingChart(true);
+      }
+      
       const res = await fetch(url.toString(), { signal: controller.signal });
       if (!res.ok) {
         throw new Error(`Erreur serveur: ${res.status}`);
@@ -106,8 +113,12 @@ export default function Home() {
       const data = await res.json();
       console.log('Stats received:', data);
       
-      // On ne met à jour que si ce n'est pas une requête annulée
-      setStats(data);
+      if (data.chartData && !data.topArtists) {
+        // Partial update
+        setStats(prev => prev ? { ...prev, chartData: data.chartData } : data);
+      } else {
+        setStats(data);
+      }
       setError(null);
     } catch (err: any) {
       if (err.name === 'AbortError') {
@@ -121,6 +132,7 @@ export default function Home() {
       if (!controller.signal.aborted) {
         setLoading(false);
         setSyncing(false);
+        setLoadingChart(false);
       }
     }
   };
@@ -511,7 +523,22 @@ export default function Home() {
         </div>
       )}
 
-      <div className="chart-container animated" style={{ animationDelay: '0.4s' }}>
+      <div className="chart-container animated" style={{ animationDelay: '0.4s', position: 'relative' }}>
+        {loadingChart && (
+          <div style={{ 
+            position: 'absolute', 
+            inset: 0, 
+            background: 'rgba(10,10,10,0.4)', 
+            backdropFilter: 'blur(4px)', 
+            zIndex: 10, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            borderRadius: '20px'
+          }}>
+            <RefreshCw className="animate-spin" style={{ color: 'var(--accent-green)' }} />
+          </div>
+        )}
         <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <BarChart3 color="var(--accent-green)" />
