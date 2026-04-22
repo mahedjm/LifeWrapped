@@ -313,7 +313,7 @@ export default function Home() {
               letterSpacing: '-0.5px', 
               position: 'relative', 
               zIndex: 2,
-              color: themeColor
+              color: themeColor || undefined
             }}>Écho</h1>
           </div>
         )}
@@ -648,7 +648,7 @@ export default function Home() {
           </div>
           <div style={{ height: '220px' }}>
             {stats?.hourlyActivity ? (
-              <DashboardLineChart data={stats.hourlyActivity} color={themeColor} />
+              <DashboardLineChart data={stats.hourlyActivity} color={themeColor || '#1DB954'} />
             ) : (
               <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                 Chargement...
@@ -680,7 +680,7 @@ export default function Home() {
           </div>
           <div style={{ height: '220px' }}>
             {stats?.dailyActivity ? (
-              <DashboardChart data={stats.dailyActivity} color={themeColor} />
+              <DashboardChart data={stats.dailyActivity} color={themeColor || '#1DB954'} />
             ) : (
               <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                 Chargement...
