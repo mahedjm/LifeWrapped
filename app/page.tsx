@@ -334,7 +334,7 @@ export default function Home() {
               <div className="logo-wave" />
               <div className="logo-wave" />
               <div className="logo-wave" />
-              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor, position: 'relative', zIndex: 2 }}>Écho</h1>
+              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor || '#1DB954', position: 'relative', zIndex: 2 }}>Écho</h1>
             </div>
             
             {stats?.username && (
