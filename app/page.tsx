@@ -377,7 +377,7 @@ export default function Home() {
                 <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
                 <span>{syncing ? 'Synchronisation...' : 'Synchroniser'}</span>
               </button>
-              <button className="btn btn-secondary" onClick={handleExport} disabled={syncing || !stats} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: `${themeColor}26`, color: themeColor, border: `1px solid ${themeColor}4d` }}>
+              <button className="btn btn-secondary" onClick={handleExport} disabled={syncing || !stats} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: `${themeColor || '#1DB954'}26`, color: themeColor || '#1DB954', border: `1px solid ${themeColor || '#1DB954'}4d` }}>
                 <Share2 size={18} />
                 <span>Partager</span>
               </button>
@@ -392,7 +392,7 @@ export default function Home() {
               <div className="logo-wave" />
               <div className="logo-wave" />
               <div className="logo-wave" />
-              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor, position: 'relative', zIndex: 2 }}>Écho</h1>
+              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor || '#1DB954', position: 'relative', zIndex: 2 }}>Écho</h1>
             </div>
           </div>
         </div>
@@ -412,7 +412,7 @@ export default function Home() {
       {/* Hidden Share Card for Export */}
       <ShareCard 
         ref={shareCardRef} 
-        themeColor={themeColor}
+        themeColor={themeColor || '#1DB954'}
         stats={stats ? {
           topArtists: stats.topArtists,
           weeklyTotalMs: stats.weekly?.reduce((acc, curr) => acc + curr.ms, 0) || 0,
