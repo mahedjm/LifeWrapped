@@ -461,8 +461,8 @@ h1 {
 @keyframes rainbowReveal {
   /* Green Pulse (0s - 2s) */
   0%   { opacity: 0; color: #169c46; transform: scale(0.98); }
-  5%   { opacity: 0.6; color: #169c46; transform: scale(1); }
-  10%  { opacity: 0.6; color: #169c46; transform: scale(1); }
+  5%   { opacity: 0.75; color: #169c46; transform: scale(1); }
+  15%  { opacity: 0.75; color: #169c46; transform: scale(1); }
   25%  { opacity: 0; color: #169c46; transform: scale(1.02); }
   
   /* Switch to Red while hidden */
@@ -470,8 +470,8 @@ h1 {
   
   /* Red Pulse (2s - 4s) */
   25%  { opacity: 0; color: #d6333a; transform: scale(0.98); }
-  30%  { opacity: 0.6; color: #d6333a; transform: scale(1); }
-  35%  { opacity: 0.6; color: #d6333a; transform: scale(1); }
+  30%  { opacity: 0.75; color: #d6333a; transform: scale(1); }
+  40%  { opacity: 0.75; color: #d6333a; transform: scale(1); }
   50%  { opacity: 0; color: #d6333a; transform: scale(1.02); }
 
   /* Switch to Purple while hidden */
@@ -479,8 +479,8 @@ h1 {
 
   /* Purple Pulse (4s - 6s) */
   50%  { opacity: 0; color: #8a2ed9; transform: scale(0.98); }
-  55%  { opacity: 0.6; color: #8a2ed9; transform: scale(1); }
-  60%  { opacity: 0.6; color: #8a2ed9; transform: scale(1); }
+  55%  { opacity: 0.75; color: #8a2ed9; transform: scale(1); }
+  65%  { opacity: 0.75; color: #8a2ed9; transform: scale(1); }
   75%  { opacity: 0; color: #8a2ed9; transform: scale(1.02); }
 
   /* Switch to Blue while hidden */
@@ -488,8 +488,8 @@ h1 {
 
   /* Blue Pulse (6s - 8s) */
   75%  { opacity: 0; color: #00b2db; transform: scale(0.98); }
-  80%  { opacity: 0.6; color: #00b2db; transform: scale(1); }
-  85%  { opacity: 0.6; color: #00b2db; transform: scale(1); }
+  80%  { opacity: 0.75; color: #00b2db; transform: scale(1); }
+  90%  { opacity: 0.75; color: #00b2db; transform: scale(1); }
   100% { opacity: 0; color: #00b2db; transform: scale(1.02); }
   
   /* Back to Green while hidden */

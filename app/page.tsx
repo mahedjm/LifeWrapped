@@ -41,7 +41,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [nowPlaying, setNowPlaying] = useState<any>(null);
-  const [themeColor, setThemeColor] = useState('#1DB954');
+  const [themeColor, setThemeColor] = useState<string | null>(null);
+  
+  // Initialisation immédiate du thème pour éviter le flash vert au chargement
+  useEffect(() => {
+    const saved = localStorage.getItem('lw-theme-color') || '#1DB954';
+    setThemeColor(saved);
+    document.documentElement.style.setProperty('--accent-green', saved);
+  }, []);
   const lastTrackId = useRef<string | null>(null);
   const nowPlayingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -61,11 +68,7 @@ export default function Home() {
   const [loadingChart, setLoadingChart] = useState(false);
   const [activeTab, setActiveTab] = useState('accueil');
 
-  // Persistence du thème
-  useEffect(() => {
-    const saved = localStorage.getItem('lw-theme-color');
-    if (saved) setThemeColor(saved);
-  }, []);
+  // Suppression de l'ancien useEffect redondant
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent-green', themeColor);
@@ -293,19 +296,21 @@ export default function Home() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-dark)' }}>
-        <div className="logo-container rainbow" style={{ transform: 'scale(1.5)' }}>
-          <div className="logo-wave" />
-          <div className="logo-wave" />
-          <div className="logo-wave" />
-          <div className="logo-wave" />
-          <h1 style={{ 
-            margin: 0, 
-            fontWeight: 900, 
-            letterSpacing: '-0.5px', 
-            position: 'relative', 
-            zIndex: 2
-          }}>Écho</h1>
-        </div>
+        {themeColor && (
+          <div className="logo-container" style={{ transform: 'scale(1.5)' }}>
+            <div className="logo-wave" />
+            <div className="logo-wave" />
+            <div className="logo-wave" />
+            <h1 style={{ 
+              margin: 0, 
+              fontWeight: 900, 
+              letterSpacing: '-0.5px', 
+              position: 'relative', 
+              zIndex: 2,
+              color: themeColor
+            }}>Écho</h1>
+          </div>
+        )}
       </div>
     );
   }
