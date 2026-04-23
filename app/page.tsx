@@ -43,7 +43,7 @@ export default function Home() {
   const { 
     stats, setStats, loading, syncing, manualSyncing, 
     loadingChart, setLoadingChart, error, fetchStats 
-  } = useStats(period, trackPeriod, chartPeriod);
+  } = useStats(period, trackPeriod, chartPeriod, artistLimit, trackLimit);
   const { 
     showNotifications, setShowNotifications, notifications, toggleNotifications 
   } = useNotifications();

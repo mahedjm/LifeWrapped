@@ -1,7 +1,13 @@
 import { useState, useCallback, useRef } from 'react';
 import { Stats } from '@/lib/types';
 
-export function useStats(initialPeriod: string, initialTrackPeriod: string, initialChartPeriod: string) {
+export function useStats(
+  initialPeriod: string, 
+  initialTrackPeriod: string, 
+  initialChartPeriod: string,
+  initialArtistLimit: number,
+  initialTrackLimit: number
+) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -12,14 +18,14 @@ export function useStats(initialPeriod: string, initialTrackPeriod: string, init
 
   const fetchStats = useCallback(async (
     sync = false, 
-    currentArtistPeriod: string, 
-    currentTrackPeriod: string, 
-    currentChartPeriod: string,
-    currentArtistLimit: number,
-    currentTrackLimit: number,
+    currentArtistPeriod = initialPeriod, 
+    currentTrackPeriod = initialTrackPeriod, 
+    currentChartPeriod = initialChartPeriod,
+    currentArtistLimit = initialArtistLimit,
+    currentTrackLimit = initialTrackLimit,
     isManual = false,
-    activePeriod: string, // Current period in state
-    activeTrackPeriod: string // Current track period in state
+    activePeriod = initialPeriod,
+    activeTrackPeriod = initialTrackPeriod
   ) => {
     // Annulation de la requête précédente si elle existe encore
     if (abortControllerRef.current) {
