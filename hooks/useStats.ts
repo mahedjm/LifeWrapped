@@ -92,6 +92,7 @@ export function useStats(
     loadingChart,
     setLoadingChart,
     error,
-    fetchStats
+    fetchStats,
+    setSyncing
   };
 }

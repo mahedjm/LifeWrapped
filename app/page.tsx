@@ -41,7 +41,7 @@ export default function Home() {
   // Custom Hooks (Logic extraction)
   const { themeColor, setThemeColor } = useTheme();
   const { 
-    stats, setStats, loading, syncing, manualSyncing, 
+    stats, setStats, loading, syncing, setSyncing, manualSyncing, 
     loadingChart, setLoadingChart, error, fetchStats 
   } = useStats(period, trackPeriod, chartPeriod, artistLimit, trackLimit);
   const { 
