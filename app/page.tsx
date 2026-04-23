@@ -259,7 +259,7 @@ export default function Home() {
                     }}
                   >
                     <Bell size={20} />
-                    {notifications.some(n => !n.read) && <div className="notif-badge" />}
+                    {notifications.some(n => n.status === 'unread') && <div className="notif-badge" />}
                   </button>
                 </div>
               </div>
@@ -1064,7 +1064,7 @@ export default function Home() {
         <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleNotifications(); setShowPalette(false); setShowAccount(false); }}>
           <div style={{ position: 'relative' }}>
             <Bell size={24} color={showNotifications ? 'var(--accent-green)' : 'var(--text-secondary)'} />
-            {notifications.some(n => !n.read) && <div className="notif-badge" style={{ top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'red', borderRadius: '50%', position: 'absolute' }} />}
+            {notifications.some(n => n.status === 'unread') && <div className="notif-badge" style={{ top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'red', borderRadius: '50%', position: 'absolute' }} />}
           </div>
           <span>Notifications</span>
         </button>
