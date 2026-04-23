@@ -176,14 +176,7 @@ export default function Home() {
     }
   };
 
-  const calculateTrend = () => {
-    if (!stats || !stats.previousMonthly) return null;
-    const diff = ((stats.monthly - stats.previousMonthly) / stats.previousMonthly) * 100;
-    return {
-      value: Math.abs(diff).toFixed(0) + '%',
-      isUp: diff > 0
-    };
-  };
+  // Duplicate removed
 
   if (loading) {
     return (
