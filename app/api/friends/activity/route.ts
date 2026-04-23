@@ -80,7 +80,7 @@ export async function GET() {
       if (person.isMe) return person;
 
       // Artistes en commun
-      const commonArtists = person.topArtists.filter(a => me?.topArtists.includes(a));
+      const commonArtists = person.topArtists.filter((a: string) => me?.topArtists.includes(a));
       
       // Différence de temps
       const diffMs = me ? me.weeklyTotalMs - person.weeklyTotalMs : 0;
