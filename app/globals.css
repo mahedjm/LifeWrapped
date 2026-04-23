@@ -197,46 +197,63 @@ h1 {
 .logo-wave:nth-child(2) { animation-delay: 1.3s; }
 .logo-wave:nth-child(3) { animation-delay: 2.6s; }
 
-/* --- Rainbow Animation for Login --- */
-.rainbow h1 {
-  background: linear-gradient(
-    to right, 
-    #1db954, #FC3C44, #A238FF, #00D2FF, #1db954
-  );
-  background-size: 200% auto;
-  color: transparent !important;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: rainbow-shine 4s linear infinite;
-  display: inline-block;
+/* --- Logo Pulse & Reveal Animation (Login/Loading) --- */
+.logo-container.rainbow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-.rainbow .logo-wave {
-  border-color: #1db954;
-  animation: logo-wave-pulse-rainbow 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+.logo-container.rainbow h1 {
+  position: relative;
+  z-index: 10;
+  animation: logo-reveal-sequence 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-@keyframes rainbow-shine {
-  to { background-position: 200% center; }
+.logo-container.rainbow .logo-wave {
+  animation: logo-wave-sequence 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-@keyframes logo-wave-pulse-rainbow {
-  0% {
-    transform: translate(-50%, -50%) scale(0.6);
-    opacity: 0;
-    border-color: #1db954;
-  }
-  33% {
-    border-color: #FC3C44;
-  }
-  66% {
-    border-color: #00D2FF;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(var(--logo-wave-scale));
-    opacity: 0;
-    border-color: #1db954;
-  }
+/* On décale les ondes secondaires pour l'effet de profondeur */
+.logo-container.rainbow .logo-wave:nth-child(2) { animation-delay: 0.2s; }
+.logo-container.rainbow .logo-wave:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes logo-reveal-sequence {
+  /* Cycle 1: Vert (Spotify) */
+  0%   { opacity: 0; transform: scale(0.8); color: #1db954; filter: blur(8px); }
+  5%   { opacity: 1; transform: scale(1); color: #1db954; filter: blur(0); }
+  25%  { opacity: 1; transform: scale(1.02); color: #1db954; filter: blur(0); }
+  33%  { opacity: 0; transform: scale(1.1); color: #1db954; filter: blur(4px); }
+  
+  /* Cycle 2: Rouge (Apple) */
+  33.01% { opacity: 0; transform: scale(0.8); color: #FC3C44; filter: blur(8px); }
+  38%    { opacity: 1; transform: scale(1); color: #FC3C44; filter: blur(0); }
+  58%    { opacity: 1; transform: scale(1.02); color: #FC3C44; filter: blur(0); }
+  66%    { opacity: 0; transform: scale(1.1); color: #FC3C44; filter: blur(4px); }
+  
+  /* Cycle 3: Bleu (Tidal) */
+  66.01% { opacity: 0; transform: scale(0.8); color: #00D2FF; filter: blur(8px); }
+  71%    { opacity: 1; transform: scale(1); color: #00D2FF; filter: blur(0); }
+  91%    { opacity: 1; transform: scale(1.02); color: #00D2FF; filter: blur(0); }
+  100%   { opacity: 0; transform: scale(1.1); color: #00D2FF; filter: blur(4px); }
+}
+
+@keyframes logo-wave-sequence {
+  /* Cycle 1: Vert */
+  0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #1db954; }
+  10%  { opacity: 0.6; }
+  33%  { transform: translate(-50%, -50%) scale(3); opacity: 0; border-color: #1db954; }
+  
+  /* Cycle 2: Rouge */
+  33.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #FC3C44; }
+  43%    { opacity: 0.6; }
+  66%    { transform: translate(-50%, -50%) scale(3); opacity: 0; border-color: #FC3C44; }
+  
+  /* Cycle 3: Bleu */
+  66.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #00D2FF; }
+  76%    { opacity: 0.6; }
+  100%   { transform: translate(-50%, -50%) scale(3); opacity: 0; border-color: #00D2FF; }
 }
 
 /* --- Notifications --- */

@@ -205,7 +205,7 @@ export default function Home() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-dark)' }}>
         {themeColor && (
-          <div className="logo-container" style={{ transform: 'scale(1.5)' }}>
+          <div className="logo-container rainbow" style={{ transform: 'scale(1.5)' }}>
             <div className="logo-wave" />
             <div className="logo-wave" />
             <div className="logo-wave" />
