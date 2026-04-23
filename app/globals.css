@@ -222,19 +222,22 @@ h1 {
 @keyframes logo-reveal-sequence {
   /* Cycle 1: Vert (Spotify) */
   0%   { opacity: 0; transform: scale(0.8); color: #1db954; filter: blur(8px); }
-  5%   { opacity: 1; transform: scale(1); color: #1db954; filter: blur(0); }
+  8%   { opacity: 0; transform: scale(0.8); }
+  15%  { opacity: 1; transform: scale(1); color: #1db954; filter: blur(0); }
   25%  { opacity: 1; transform: scale(1.02); color: #1db954; filter: blur(0); }
   33%  { opacity: 0; transform: scale(1.1); color: #1db954; filter: blur(4px); }
   
   /* Cycle 2: Rouge (Apple) */
   33.01% { opacity: 0; transform: scale(0.8); color: #FC3C44; filter: blur(8px); }
-  38%    { opacity: 1; transform: scale(1); color: #FC3C44; filter: blur(0); }
+  41%    { opacity: 0; transform: scale(0.8); }
+  48%    { opacity: 1; transform: scale(1); color: #FC3C44; filter: blur(0); }
   58%    { opacity: 1; transform: scale(1.02); color: #FC3C44; filter: blur(0); }
   66%    { opacity: 0; transform: scale(1.1); color: #FC3C44; filter: blur(4px); }
   
   /* Cycle 3: Bleu (Tidal) */
   66.01% { opacity: 0; transform: scale(0.8); color: #00D2FF; filter: blur(8px); }
-  71%    { opacity: 1; transform: scale(1); color: #00D2FF; filter: blur(0); }
+  74%    { opacity: 0; transform: scale(0.8); }
+  81%    { opacity: 1; transform: scale(1); color: #00D2FF; filter: blur(0); }
   91%    { opacity: 1; transform: scale(1.02); color: #00D2FF; filter: blur(0); }
   100%   { opacity: 0; transform: scale(1.1); color: #00D2FF; filter: blur(4px); }
 }
