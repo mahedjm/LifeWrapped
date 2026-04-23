@@ -992,7 +992,19 @@ export default function Home() {
       )}
 
       {/* Floating Action Buttons */}
-      <div className="floating-actions">
+      <div className="mobile-only fab-container">
+        <button 
+          className={`fab fab-palette ${showPalette ? 'active' : ''}`}
+          onClick={() => {
+            setShowPalette(!showPalette);
+            setShowAccount(false);
+            setShowNotifications(false);
+          }}
+          title="Thème"
+          style={{ marginBottom: '12px' }}
+        >
+          <Palette size={22} />
+        </button>
         <button 
           className="fab fab-share" 
           onClick={handleExport}
