@@ -1015,7 +1015,7 @@ export default function Home() {
 
       {/* Boutons Flottants (Mobile) - Centralisés dans un composant pour plus de clarté */}
       <FloatingActions 
-        themeColor={themeColor}
+        themeColor={themeColor || '#1DB954'}
         setThemeColor={setThemeColor}
         showPalette={showPalette}
         setShowPalette={setShowPalette}
