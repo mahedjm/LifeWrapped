@@ -208,55 +208,67 @@ h1 {
 .logo-container.rainbow h1 {
   position: relative;
   z-index: 10;
-  animation: logo-reveal-sequence 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: logo-reveal-sequence 16s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .logo-container.rainbow .logo-wave {
-  animation: logo-wave-sequence 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: logo-wave-sequence 16s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 /* On décale les ondes secondaires pour l'effet de profondeur */
-.logo-container.rainbow .logo-wave:nth-child(2) { animation-delay: 0.2s; }
-.logo-container.rainbow .logo-wave:nth-child(3) { animation-delay: 0.4s; }
+.logo-container.rainbow .logo-wave:nth-child(2) { animation-delay: 0.25s; }
+.logo-container.rainbow .logo-wave:nth-child(3) { animation-delay: 0.5s; }
 
 @keyframes logo-reveal-sequence {
-  /* Cycle 1: Vert (Spotify) */
-  0%   { opacity: 0; transform: scale(0.8); color: #1db954; filter: blur(8px); }
+  /* Cycle 1: Vert (Spotify) - 0% à 25% (4s) */
+  0%   { opacity: 0; transform: scale(0.8); color: #1db954; filter: blur(10px); }
   8%   { opacity: 0; transform: scale(0.8); }
-  15%  { opacity: 1; transform: scale(1); color: #1db954; filter: blur(0); }
-  25%  { opacity: 1; transform: scale(1.02); color: #1db954; filter: blur(0); }
-  33%  { opacity: 0; transform: scale(1.1); color: #1db954; filter: blur(4px); }
+  13%  { opacity: 1; transform: scale(1); color: #1db954; filter: blur(0); }
+  17%  { opacity: 1; transform: scale(1); }
+  24%  { opacity: 0; transform: scale(1.1); color: #1db954; filter: blur(5px); }
   
-  /* Cycle 2: Rouge (Apple) */
-  33.01% { opacity: 0; transform: scale(0.8); color: #FC3C44; filter: blur(8px); }
-  41%    { opacity: 0; transform: scale(0.8); }
-  48%    { opacity: 1; transform: scale(1); color: #FC3C44; filter: blur(0); }
-  58%    { opacity: 1; transform: scale(1.02); color: #FC3C44; filter: blur(0); }
-  66%    { opacity: 0; transform: scale(1.1); color: #FC3C44; filter: blur(4px); }
+  /* Cycle 2: Rouge (Apple) - 25% à 50% (4s) */
+  25%    { opacity: 0; transform: scale(0.8); color: #FC3C44; filter: blur(10px); }
+  33%    { opacity: 0; transform: scale(0.8); }
+  38%    { opacity: 1; transform: scale(1); color: #FC3C44; filter: blur(0); }
+  42%    { opacity: 1; transform: scale(1); }
+  49%    { opacity: 0; transform: scale(1.1); color: #FC3C44; filter: blur(5px); }
   
-  /* Cycle 3: Bleu (Tidal) */
-  66.01% { opacity: 0; transform: scale(0.8); color: #00D2FF; filter: blur(8px); }
-  74%    { opacity: 0; transform: scale(0.8); }
-  81%    { opacity: 1; transform: scale(1); color: #00D2FF; filter: blur(0); }
-  91%    { opacity: 1; transform: scale(1.02); color: #00D2FF; filter: blur(0); }
-  100%   { opacity: 0; transform: scale(1.1); color: #00D2FF; filter: blur(4px); }
+  /* Cycle 3: Violet (Deezer) - 50% à 75% (4s) */
+  50%    { opacity: 0; transform: scale(0.8); color: #A238FF; filter: blur(10px); }
+  58%    { opacity: 0; transform: scale(0.8); }
+  63%    { opacity: 1; transform: scale(1); color: #A238FF; filter: blur(0); }
+  67%    { opacity: 1; transform: scale(1); }
+  74%    { opacity: 0; transform: scale(1.1); color: #A238FF; filter: blur(5px); }
+
+  /* Cycle 4: Bleu (Tidal) - 75% à 100% (4s) */
+  75%    { opacity: 0; transform: scale(0.8); color: #00D2FF; filter: blur(10px); }
+  83%    { opacity: 0; transform: scale(0.8); }
+  88%    { opacity: 1; transform: scale(1); color: #00D2FF; filter: blur(0); }
+  92%    { opacity: 1; transform: scale(1); }
+  99%    { opacity: 0; transform: scale(1.1); color: #00D2FF; filter: blur(5px); }
 }
 
 @keyframes logo-wave-sequence {
   /* Cycle 1: Vert */
   0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #1db954; }
-  10%  { opacity: 0.6; }
-  33%  { transform: translate(-50%, -50%) scale(3); opacity: 0; border-color: #1db954; }
+  8%   { opacity: 0.6; }
+  25%  { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #1db954; }
   
   /* Cycle 2: Rouge */
-  33.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #FC3C44; }
-  43%    { opacity: 0.6; }
-  66%    { transform: translate(-50%, -50%) scale(3); opacity: 0; border-color: #FC3C44; }
+  25.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #FC3C44; }
+  33%    { opacity: 0.6; }
+  50%    { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #FC3C44; }
   
-  /* Cycle 3: Bleu */
-  66.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #00D2FF; }
-  76%    { opacity: 0.6; }
-  100%   { transform: translate(-50%, -50%) scale(3); opacity: 0; border-color: #00D2FF; }
+  /* Cycle 3: Violet */
+  50.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #A238FF; }
+  58%    { opacity: 0.6; }
+  75%    { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #A238FF; }
+
+  /* Cycle 4: Bleu */
+  75.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #00D2FF; }
+  83%    { opacity: 0.6; }
+  100%   { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #00D2FF; }
 }
 
 /* --- Notifications --- */
