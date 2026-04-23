@@ -1,0 +1,91 @@
+import { useState, useCallback, useRef } from 'react';
+import { Stats } from '@/lib/types';
+
+export function useStats(initialPeriod: string, initialTrackPeriod: string, initialChartPeriod: string) {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [manualSyncing, setManualSyncing] = useState(false);
+  const [loadingChart, setLoadingChart] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const fetchStats = useCallback(async (
+    sync = false, 
+    currentArtistPeriod: string, 
+    currentTrackPeriod: string, 
+    currentChartPeriod: string,
+    currentArtistLimit: number,
+    currentTrackLimit: number,
+    isManual = false,
+    activePeriod: string, // Current period in state
+    activeTrackPeriod: string // Current track period in state
+  ) => {
+    // Annulation de la requête précédente si elle existe encore
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    if (sync) setSyncing(true);
+    if (isManual) setManualSyncing(true);
+    
+    try {
+      const url = new URL('/api/stats', window.location.origin);
+      if (sync) url.searchParams.set('sync', 'true');
+      url.searchParams.set('artistPeriod', currentArtistPeriod);
+      url.searchParams.set('trackPeriod', currentTrackPeriod);
+      url.searchParams.set('chartPeriod', currentChartPeriod);
+      url.searchParams.set('artistLimit', currentArtistLimit.toString());
+      url.searchParams.set('trackLimit', currentTrackLimit.toString());
+
+      // Partial loading logic
+      const isChartOnly = currentChartPeriod !== initialChartPeriod && currentArtistPeriod === activePeriod && currentTrackPeriod === activeTrackPeriod && !sync;
+      if (isChartOnly) {
+        url.searchParams.set('partial', 'chart');
+        setLoadingChart(true);
+      }
+
+      const res = await fetch(url.toString(), { signal: controller.signal });
+      if (!res.ok) throw new Error(`Erreur serveur: ${res.status}`);
+      
+      const data = await res.json();
+      
+      if (data.chartData && !data.topArtists) {
+        // Partial update: only update chartData
+        setStats(prev => prev ? { ...prev, chartData: data.chartData } : data);
+      } else {
+        setStats(data);
+      }
+      setError(null);
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log('Requête stats annulée (Race Condition évitée)');
+      } else {
+        console.error('Fetch error:', err);
+        setError(err.message);
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setLoading(false);
+        setSyncing(false);
+        setLoadingChart(false);
+        setManualSyncing(false);
+      }
+    }
+  }, [initialChartPeriod]);
+
+  return {
+    stats,
+    setStats,
+    loading,
+    syncing,
+    manualSyncing,
+    loadingChart,
+    setLoadingChart,
+    error,
+    fetchStats
+  };
+}

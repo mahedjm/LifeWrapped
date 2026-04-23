@@ -2,154 +2,57 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity, Clock, Calendar, BarChart3, RefreshCw, AlertCircle, Music, ChevronDown, PieChart, HelpCircle } from 'lucide-react';
+import { 
+  Activity, Clock, Calendar, BarChart3, RefreshCw, 
+  AlertCircle, Music, ChevronDown, PieChart, HelpCircle, 
+  Share2, LogOut, User, Palette, Users, Bell, 
+  Search, TrendingUp, Award, Grid, Zap, Info, Layers
+} from 'lucide-react';
 import DashboardChart from '@/components/DashboardChart';
 import DashboardLineChart from '@/components/DashboardLineChart';
 import NowPlaying from '@/components/NowPlaying';
 import ShareCard from '@/components/ShareCard';
-import { useRef } from 'react';
-import { Share2, LogOut, User, Palette, Users, Bell } from 'lucide-react';
+import InfoTooltip from '@/components/InfoTooltip';
 
-interface Stats {
-  username?: string;
-  today: number;
-  yesterday?: number;
-  weekly: { date: string; ms: number }[];
-  monthly: number;
-  previousMonthly: number;
-  topArtists: { artist: string; total_ms: number; image_url: string | null }[];
-  topTracks: { title: string; artist: string; play_count: number; image_url: string | null }[];
-  chartData?: { date?: string; label?: string; ms: number }[];
-  hourlyActivity?: { label: string; ms: number }[];
-  dailyActivity?: { label: string; ms: number }[];
-  newArtists: { artist: string; image_url: string | null; discovered_at: number }[];
-  prevWeekTotal: number;
-  obsession?: { title: string; artist: string; image_url: string; play_count: number } | null;
-  firstEntryDate: string | null;
-  isAuthenticated: boolean;
-}
-
-const PALETTES = [
-  { id: 'spotify', name: 'Spotify', color: '#1DB954' },
-  { id: 'apple', name: 'Apple Music', color: '#FC3C44' },
-  { id: 'deezer', name: 'Deezer', color: '#A238FF' },
-  { id: 'tidal', name: 'Tidal', color: '#00D2FF' }
-];
+// Libs & Hooks
+import { Stats } from '@/lib/types';
+import { PALETTES, TIME_PERIODS, CHART_PERIODS } from '@/lib/constants';
+import { useStats } from '@/hooks/useStats';
+import { useTheme } from '@/hooks/useTheme';
+import { useNotifications } from '@/hooks/useNotifications';
+import { formatTime, formatDiffTime } from '@/lib/utils';
 
 export default function Home() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [nowPlaying, setNowPlaying] = useState<any>(null);
-  const [themeColor, setThemeColor] = useState<string | null>(null);
+  const router = useRouter();
   
-  // Initialisation immédiate du thème pour éviter le flash vert au chargement
-  useEffect(() => {
-    const saved = localStorage.getItem('lw-theme-color') || '#1DB954';
-    setThemeColor(saved);
-    document.documentElement.style.setProperty('--accent-green', saved);
-  }, []);
-  const lastTrackId = useRef<string | null>(null);
-  const nowPlayingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const shareCardRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<string | null>(null);
+  // States for filters (UI specific)
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [trackPeriod, setTrackPeriod] = useState<'week' | 'month' | 'year'>('week');
-  const [genrePeriod, setGenrePeriod] = useState<'week' | 'month' | 'year'>('month');
   const [chartPeriod, setChartPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [artistLimit, setArtistLimit] = useState<number>(5);
   const [trackLimit, setTrackLimit] = useState<number>(5);
   const [showArtistLimit, setShowArtistLimit] = useState(false);
   const [showTrackLimit, setShowTrackLimit] = useState(false);
+  const [activeTab, setActiveTab] = useState('accueil');
   const [showPalette, setShowPalette] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
-  const [loadingChart, setLoadingChart] = useState(false);
-  const [manualSyncing, setManualSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState('accueil');
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Bienvenue sur Écho !', message: 'Découvrez vos statistiques musicales en temps réel.', date: 'Maintenant', read: false },
-    { id: 2, title: 'Nouvelle mise à jour', message: 'Le système de notifications est arrivé.', date: 'Aujourd\'hui', read: false }
-  ]);
+  
+  // Custom Hooks (Logic extraction)
+  const { themeColor, setThemeColor } = useTheme();
+  const { 
+    stats, setStats, loading, syncing, manualSyncing, 
+    loadingChart, setLoadingChart, error, fetchStats 
+  } = useStats(period, trackPeriod, chartPeriod);
+  const { 
+    showNotifications, setShowNotifications, notifications, toggleNotifications 
+  } = useNotifications();
 
-  // Suppression de l'ancien useEffect redondant
-
-  useEffect(() => {
-    if (themeColor) {
-      document.documentElement.style.setProperty('--accent-green', themeColor);
-      localStorage.setItem('lw-theme-color', themeColor);
-    }
-  }, [themeColor]);
-
-  const fetchStats = async (
-    sync = false, 
-    currentArtistPeriod = period, 
-    currentTrackPeriod = trackPeriod, 
-    currentChartPeriod = chartPeriod,
-    currentArtistLimit = artistLimit,
-    currentTrackLimit = trackLimit,
-    isManual = false
-  ) => {
-    // Annulation de la requête précédente si elle existe encore
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    
-    // Nouveau contrôleur pour cette requête
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    if (sync) setSyncing(true);
-    if (isManual) setManualSyncing(true);
-    try {
-      console.log('Fetching stats...', { currentArtistPeriod, currentTrackPeriod, currentChartPeriod });
-      const url = new URL('/api/stats', window.location.origin);
-      if (sync) url.searchParams.set('sync', 'true');
-      url.searchParams.set('artistPeriod', currentArtistPeriod);
-      url.searchParams.set('trackPeriod', currentTrackPeriod);
-      url.searchParams.set('chartPeriod', currentChartPeriod);
-      url.searchParams.set('artistLimit', currentArtistLimit.toString());
-      url.searchParams.set('trackLimit', currentTrackLimit.toString());
-      
-      const isChartOnly = currentChartPeriod !== chartPeriod && currentArtistPeriod === period && currentTrackPeriod === trackPeriod && !sync;
-      if (isChartOnly) {
-        url.searchParams.set('partial', 'chart');
-        setLoadingChart(true);
-      }
-      
-      const res = await fetch(url.toString(), { signal: controller.signal });
-      if (!res.ok) {
-        throw new Error(`Erreur serveur: ${res.status}`);
-      }
-      const data = await res.json();
-      console.log('Stats received:', data);
-      
-      if (data.chartData && !data.topArtists) {
-        // Partial update
-        setStats(prev => prev ? { ...prev, chartData: data.chartData } : data);
-      } else {
-        setStats(data);
-      }
-      setError(null);
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        console.log('Requête stats annulée (Race Condition évitée)');
-        return;
-      }
-      console.error('Failed to fetch stats:', err);
-      setError("Erreur lors de la récupération des données.");
-    } finally {
-      // Nettoyage final seulement si c'est la requête actuelle qui se termine
-      if (!controller.signal.aborted) {
-        setLoading(false);
-        setSyncing(false);
-        setLoadingChart(false);
-        setManualSyncing(false);
-      }
-    }
-  };
+  // Navigation & UI references
+  const [nowPlaying, setNowPlaying] = useState<any>(null);
+  const lastTrackId = useRef<string | null>(null);
+  const nowPlayingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   // Polling pour le Mode Party (Now Playing) + Smart Sync
   useEffect(() => {
@@ -220,50 +123,28 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    // Ajout d'un debounce de 300ms pour éviter de mitrailler le serveur
-    const timer = setTimeout(() => {
-      fetchStats(false, period, trackPeriod, chartPeriod);
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+  const calculateTrend = () => {
+    if (!stats || !stats.previousMonthly) return null;
+    const diff = ((stats.monthly - stats.previousMonthly) / stats.previousMonthly) * 100;
+    return {
+      value: Math.abs(diff).toFixed(0) + '%',
+      isUp: diff > 0
     };
-  }, [period, trackPeriod, chartPeriod]);
-
-  const formatTime = (ms: number) => {
-    const totalMinutes = Math.floor(ms / (1000 * 60));
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours}h ${minutes}min`;
   };
-
-  const formatDiffTime = (ms: number) => {
-    const totalMinutes = Math.floor(ms / (1000 * 60));
-    if (totalMinutes === 0) return '0min';
-    if (totalMinutes < 60) return `${totalMinutes}min`;
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours}h${minutes > 0 ? ` ${minutes}min` : ''}`;
-  };
-
-  const InfoTooltip = ({ text }: { text: string }) => (
-    <span className="tooltip-container">
-      <HelpCircle size={14} className="tooltip-icon" />
-      <span className="tooltip-text">{text}</span>
-    </span>
-  );
-
-  const router = useRouter();
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
     router.refresh();
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchStats(false, period, trackPeriod, chartPeriod, artistLimit, trackLimit, false, period, trackPeriod);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [period, trackPeriod, chartPeriod, artistLimit, trackLimit, fetchStats]);
 
   const handleExport = async () => {
     if (!shareCardRef.current || !stats) return;
@@ -349,10 +230,7 @@ export default function Home() {
                     className="notif-btn" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowNotifications(!showNotifications);
-                      if (!showNotifications) {
-                        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-                      }
+                      toggleNotifications();
                     }}
                   >
                     <Bell size={20} />
@@ -398,7 +276,7 @@ export default function Home() {
             </div>
 
             <div className="action-buttons">
-              <button className="btn btn-secondary" onClick={() => fetchStats(true)} disabled={syncing} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button className="btn btn-secondary" onClick={() => fetchStats(true, period, trackPeriod, chartPeriod, artistLimit, trackLimit, false, period, trackPeriod)} disabled={syncing} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
                 <span>{syncing ? 'Synchronisation...' : 'Synchroniser'}</span>
               </button>
@@ -1107,7 +985,7 @@ export default function Home() {
           {manualSyncing && <span className="sync-label">Synchronisation...</span>}
           <button 
             className="fab fab-sync" 
-            onClick={() => fetchStats(true, period, trackPeriod, chartPeriod, artistLimit, trackLimit, true)} 
+            onClick={() => fetchStats(true, period, trackPeriod, chartPeriod, artistLimit, trackLimit, true, period, trackPeriod)} 
             disabled={syncing}
             title="Synchroniser"
           >
@@ -1150,7 +1028,7 @@ export default function Home() {
           <span>Amis</span>
         </button>
 
-        <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); setShowPalette(false); setShowFriends(false); setShowAccount(false); if(!showNotifications) setNotifications(prev => prev.map(n => ({...n, read: true}))); }}>
+        <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleNotifications(); setShowPalette(false); setShowFriends(false); setShowAccount(false); }}>
           <div style={{ position: 'relative' }}>
             <Bell size={24} color={showNotifications ? 'var(--accent-green)' : 'var(--text-secondary)'} />
             {notifications.some(n => !n.read) && <div className="notif-badge" style={{ top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'red', borderRadius: '50%', position: 'absolute' }} />}
