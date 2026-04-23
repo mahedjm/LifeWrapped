@@ -33,20 +33,20 @@ export async function GET(
 
     // 1. Top 5 Artistes du mois
     const topArtists = await db.query(`
-      SELECT artist, SUM(duration_ms) as total_ms, MAX(image_url) as image_url
+      SELECT artist_name as artist, SUM(duration_ms) as total_ms, MAX(image_url) as image_url
       FROM ecoutes
       WHERE user_id = $1 AND played_at_uts >= $2
-      GROUP BY artist
+      GROUP BY artist_name
       ORDER BY total_ms DESC
       LIMIT 5
     `, [id, startUTS]);
 
     // 2. Top 5 Morceaux du mois
     const topTracks = await db.query(`
-      SELECT title, artist, COUNT(*) as play_count, MAX(image_url) as image_url
+      SELECT track_name as title, artist_name as artist, COUNT(*) as play_count, MAX(image_url) as image_url
       FROM ecoutes
       WHERE user_id = $1 AND played_at_uts >= $2
-      GROUP BY title, artist
+      GROUP BY track_name, artist_name
       ORDER BY play_count DESC
       LIMIT 5
     `, [id, startUTS]);

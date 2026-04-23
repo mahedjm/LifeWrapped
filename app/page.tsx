@@ -41,6 +41,7 @@ export default function Home() {
   const [showPalette, setShowPalette] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
+  const [friendsRefreshKey, setFriendsRefreshKey] = useState(0);
   
   // Custom Hooks (Logic extraction)
   const { themeColor, setThemeColor } = useTheme();
@@ -150,6 +151,13 @@ export default function Home() {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
     router.refresh();
+  };
+
+  const handleRespondToFriendRequest = async (id: number, action: 'accept' | 'decline') => {
+    const success = await respondToFriendRequest(id, action);
+    if (success && action === 'accept') {
+      setFriendsRefreshKey(prev => prev + 1);
+    }
   };
 
   useEffect(() => {
@@ -327,7 +335,7 @@ export default function Home() {
       <NowPlaying track={nowPlaying} />
 
       {activeTab === 'amis' ? (
-        <FriendsList onFriendClick={(id) => setSelectedFriendId(id)} />
+        <FriendsList onFriendClick={(id) => setSelectedFriendId(id)} refreshKey={friendsRefreshKey} />
       ) : (
         <>
           {/* Activité des amis (Social Feed) - Uniquement sur l'accueil */}
@@ -1028,20 +1036,6 @@ export default function Home() {
           <span>Accueil</span>
         </div>
 
-        <div 
-          className={`nav-item ${showPalette ? 'active' : ''}`}
-          onClick={() => {
-            setShowPalette(!showPalette);
-            setShowAccount(false);
-            setShowNotifications(false);
-          }}
-        >
-          <div className="icon-wrapper">
-            <Palette size={24} />
-          </div>
-          <span>Thème</span>
-        </div>
-
         <button className={`nav-item ${activeTab === 'amis' ? 'active' : ''}`} onClick={() => { setActiveTab('amis'); setShowPalette(false); setShowAccount(false); setShowNotifications(false); }}>
           <div style={{ position: 'relative' }}>
             <Users size={24} color={activeTab === 'amis' ? 'var(--accent-green)' : 'var(--text-secondary)'} />
@@ -1060,6 +1054,20 @@ export default function Home() {
           </div>
           <span>Amis</span>
         </button>
+
+        <div 
+          className={`nav-item ${showPalette ? 'active' : ''}`}
+          onClick={() => {
+            setShowPalette(!showPalette);
+            setShowAccount(false);
+            setShowNotifications(false);
+          }}
+        >
+          <div className="icon-wrapper">
+            <Palette size={24} />
+          </div>
+          <span>Thème</span>
+        </div>
 
         <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleNotifications(); setShowPalette(false); setShowAccount(false); }}>
           <div style={{ position: 'relative' }}>
@@ -1258,7 +1266,7 @@ export default function Home() {
               {n.type === 'friend_request' && (
                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px', marginBottom: '8px' }}>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); respondToFriendRequest(n.id, 'accept'); }}
+                    onClick={(e) => { e.stopPropagation(); handleRespondToFriendRequest(n.id, 'accept'); }}
                     style={{ 
                       background: 'var(--accent-green)', 
                       color: 'black', 
@@ -1274,7 +1282,7 @@ export default function Home() {
                     Accepter
                   </button>
                   <button 
-                    onClick={(e) => { e.stopPropagation(); respondToFriendRequest(n.id, 'decline'); }}
+                    onClick={(e) => { e.stopPropagation(); handleRespondToFriendRequest(n.id, 'decline'); }}
                     style={{ 
                       background: 'rgba(255, 255, 255, 0.05)', 
                       color: 'white', 

@@ -53,12 +53,12 @@ export async function GET() {
       const stats = await db.query(`
         SELECT 
           SUM(duration_ms) as total_ms,
-          ARRAY_AGG(DISTINCT artist) as artists
+          ARRAY_AGG(DISTINCT artist_name) as artists
         FROM (
-          SELECT artist, SUM(duration_ms) as duration_ms
+          SELECT artist_name, SUM(duration_ms) as duration_ms
           FROM ecoutes 
           WHERE user_id = $1 AND played_at_uts >= $2
-          GROUP BY artist
+          GROUP BY artist_name
           ORDER BY duration_ms DESC
           LIMIT 10
         ) t

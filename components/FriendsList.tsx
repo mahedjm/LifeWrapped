@@ -3,14 +3,16 @@
 import { UserPlus, UserMinus, Search, Loader2, Users, Share2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: string) => void }) {
+export default function FriendsList({ onFriendClick, refreshKey }: { onFriendClick?: (id: string) => void, refreshKey?: number }) {
   const [friends, setFriends] = useState<{ id: string, username: string }[]>([]);
   const [newFriend, setNewFriend] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [friendToDelete, setFriendToDelete] = useState<{id: string, username: string} | null>(null);
 
   const fetchFriends = async () => {
     try {
@@ -33,7 +35,7 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
     if (invite) {
       setNewFriend(invite);
     }
-  }, []);
+  }, [refreshKey]);
 
   // Recherche de suggestions
   useEffect(() => {
@@ -72,6 +74,8 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
       const data = await res.json();
       if (data.success) {
         setNewFriend('');
+        setSuccess('Demande d\'ami envoyée avec succès !');
+        setTimeout(() => setSuccess(null), 4000);
         fetchFriends();
       } else {
         setError(data.error);
@@ -83,14 +87,15 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
     }
   };
 
-  const handleRemoveFriend = async (friendId: string) => {
-    if (!confirm('Voulez-vous vraiment retirer cet ami ?')) return;
+  const handleRemoveFriend = async () => {
+    if (!friendToDelete) return;
     try {
       await fetch('/api/friends', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ friendId })
+        body: JSON.stringify({ friendId: friendToDelete.id })
       });
+      setFriendToDelete(null);
       fetchFriends();
     } catch (e) {
       console.error(e);
@@ -308,11 +313,73 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
           align-items: center;
           gap: 10px;
         }
+        .success-msg {
+          background: rgba(30, 215, 96, 0.1);
+          border: 1px solid rgba(30, 215, 96, 0.2);
+          color: var(--accent-green);
+          padding: 12px 20px;
+          border-radius: 12px;
+          font-size: 0.9rem;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(10px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          animation: fadeIn 0.2s ease;
+        }
+        .confirm-modal {
+          background: #121212;
+          border: 1px solid var(--glass-border);
+          border-radius: 24px;
+          padding: 30px;
+          width: 90%;
+          max-width: 400px;
+          text-align: center;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .modal-actions {
+          display: flex;
+          gap: 12px;
+          margin-top: 25px;
+        }
+        .btn-modal {
+          flex: 1;
+          height: 45px;
+          border-radius: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: none;
+        }
+        .btn-cancel {
+          background: rgba(255, 255, 255, 0.05);
+          color: white;
+          border: 1px solid var(--glass-border);
+        }
+        .btn-confirm-delete {
+          background: #ff4444;
+          color: white;
+        }
+        .btn-modal:hover { transform: translateY(-2px); opacity: 0.9; }
       `}</style>
 
       <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '25px', color: 'white' }}>Gestion des Amis</h2>
       
       {error && <div className="error-msg"><Search size={16} /> {error}</div>}
+      {success && <div className="success-msg"><UserPlus size={16} /> {success}</div>}
 
       <form className="add-friend-form" onSubmit={handleAddFriend}>
         <div className="input-wrapper">
@@ -407,11 +474,43 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
                 </div>
                 @{friend.username}
               </div>
-              <button className="remove-btn" onClick={() => handleRemoveFriend(friend.id)} title="Retirer l'ami">
+              <button className="remove-btn" onClick={(e) => {
+                e.stopPropagation();
+                setFriendToDelete({ id: friend.id, username: friend.username });
+              }} title="Retirer l'ami">
                 <UserMinus size={18} />
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal de Confirmation */}
+      {friendToDelete && (
+        <div className="modal-overlay" onClick={() => setFriendToDelete(null)}>
+          <div className="confirm-modal" onClick={e => e.stopPropagation()}>
+            <div style={{ 
+              width: '60px', 
+              height: '60px', 
+              background: 'rgba(255, 68, 68, 0.1)', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              color: '#ff4444',
+              margin: '0 auto 20px'
+            }}>
+              <UserMinus size={30} />
+            </div>
+            <h3 style={{ margin: '0 0 10px', fontSize: '1.3rem' }}>Retirer l'ami ?</h3>
+            <p style={{ opacity: 0.7, margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
+              Voulez-vous vraiment retirer <strong>@{friendToDelete.username}</strong> de votre liste d'amis ?
+            </p>
+            <div className="modal-actions">
+              <button className="btn-modal btn-cancel" onClick={() => setFriendToDelete(null)}>Annuler</button>
+              <button className="btn-modal btn-confirm-delete" onClick={handleRemoveFriend}>Retirer</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
