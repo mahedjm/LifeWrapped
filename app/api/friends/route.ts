@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
     const { username } = await request.json();
     if (!username) return NextResponse.json({ error: 'Nom d\'utilisateur requis' }, { status: 400 });
 
-    // Trouver l'ami par son username
-    const friendRes = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+    // Trouver l'ami par son username (insensible à la casse)
+    const friendRes = await db.query('SELECT id FROM users WHERE username ILIKE $1', [username]);
     if (friendRes.rows.length === 0) {
       return NextResponse.json({ error: 'Utilisateur non trouvé sur Écho. Invitez-le à rejoindre !' }, { status: 404 });
     }

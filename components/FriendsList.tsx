@@ -9,6 +9,8 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const fetchFriends = async () => {
     try {
@@ -32,6 +34,28 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
       setNewFriend(invite);
     }
   }, []);
+
+  // Recherche de suggestions
+  useEffect(() => {
+    if (newFriend.length >= 3) {
+      const timer = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/users/search?q=${encodeURIComponent(newFriend)}`);
+          const data = await res.json();
+          if (data.users) {
+            setSuggestions(data.users);
+            setShowSuggestions(data.users.length > 0);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 300); // Debounce de 300ms
+      return () => clearTimeout(timer);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [newFriend]);
 
   const handleAddFriend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +167,48 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
           background: rgba(0, 0, 0, 0.4);
           box-shadow: 0 0 15px rgba(29, 185, 84, 0.1);
         }
+        .suggestions-dropdown {
+          position: absolute;
+          top: calc(100% + 5px);
+          left: 0;
+          right: 0;
+          background: #121212;
+          border: 1px solid var(--glass-border);
+          border-radius: 14px;
+          overflow: hidden;
+          z-index: 1000;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+          animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .suggestion-item {
+          padding: 12px 20px;
+          cursor: pointer;
+          transition: all 0.2s;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 500;
+        }
+        .suggestion-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--accent-green);
+        }
+        .suggestion-avatar {
+          width: 24px;
+          height: 24px;
+          background: rgba(255,255,255,0.05);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7rem;
+          font-weight: 900;
+        }
         .btn-add {
           height: 50px;
           background: var(--accent-green);
@@ -252,10 +318,29 @@ export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: st
         <div className="input-wrapper">
           <input 
             type="text" 
-            placeholder={loading ? "Chargement..." : "Nom d'utilisateur LastFm"} 
+            placeholder={loading ? "Chargement..." : "Chercher un utilisateur..."} 
             value={newFriend}
             onChange={(e) => setNewFriend(e.target.value)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onFocus={() => newFriend.length >= 3 && setShowSuggestions(true)}
           />
+          {showSuggestions && (
+            <div className="suggestions-dropdown">
+              {suggestions.map(username => (
+                <div 
+                  key={username} 
+                  className="suggestion-item"
+                  onClick={() => {
+                    setNewFriend(username);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  <div className="suggestion-avatar">{username.charAt(0).toUpperCase()}</div>
+                  <span>@{username}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn-add" type="submit" disabled={adding} title="Ajouter un ami">
