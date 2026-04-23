@@ -161,7 +161,7 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
         .profile-avatar {
           width: 70px;
           height: 70px;
-          background: rgba(29, 185, 84, 0.1);
+          background: color-mix(in srgb, var(--accent-green), transparent 90%);
           border-radius: 20px;
           display: flex;
           align-items: center;
@@ -216,7 +216,7 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
 
         .loading-state { text-align: center; padding: 60px 0; }
         .spinner {
-          width: 40px; height: 40px; border: 4px solid rgba(29, 185, 84, 0.1);
+          width: 40px; height: 40px; border: 4px solid color-mix(in srgb, var(--accent-green), transparent 90%);
           border-top-color: var(--accent-green); border-radius: 50%;
           margin: 0 auto 20px; animation: spin 1s linear infinite;
         }

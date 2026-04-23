@@ -46,7 +46,30 @@ export default function FriendsActivity({ onFriendClick }: FriendsActivityProps)
     return () => clearInterval(interval);
   }, []);
 
-  if (loading && activities.length === 0) return null;
+  if (loading && activities.length === 0) {
+    return (
+      <div className="friends-activity-container">
+        <style jsx>{`
+          .skeleton-item {
+            height: 80px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 20px;
+            margin-bottom: 15px;
+          }
+          @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `}</style>
+        <div className="skeleton-item" />
+        <div className="skeleton-item" />
+        <div className="skeleton-item" />
+      </div>
+    );
+  }
+  
   if (!loading && activities.length === 0) return null;
 
   const liveFriends = activities.filter(a => a.nowPlaying && !a.isMe);
@@ -169,8 +192,8 @@ export default function FriendsActivity({ onFriendClick }: FriendsActivityProps)
           overflow: hidden;
         }
         .leader-item.is-me {
-          background: rgba(29, 185, 84, 0.05);
-          border-color: rgba(29, 185, 84, 0.2);
+          background: color-mix(in srgb, var(--accent-green), transparent 95%);
+          border-color: color-mix(in srgb, var(--accent-green), transparent 80%);
         }
         .leader-item:hover {
           background: rgba(255, 255, 255, 0.05);
@@ -238,10 +261,10 @@ export default function FriendsActivity({ onFriendClick }: FriendsActivityProps)
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          background: 'rgba(29, 185, 84, 0.1)',
+          background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
           padding: '8px 24px',
           borderRadius: '50px',
-          border: '1px solid rgba(29, 185, 84, 0.15)',
+          border: '1px solid color-mix(in srgb, var(--accent-green), transparent 85%)',
           width: 'fit-content'
         }}>
           <Users size={18} color="var(--accent-green)" />
@@ -289,7 +312,7 @@ export default function FriendsActivity({ onFriendClick }: FriendsActivityProps)
               
               {!friend.isMe && friend.timeDiffMs !== undefined && (
                 <>
-                  <div className="comparison-text" style={{ color: friend.timeDiffMs >= 0 ? '#1DB954' : '#ff4444' }}>
+                  <div className="comparison-text" style={{ color: friend.timeDiffMs >= 0 ? 'var(--accent-green)' : '#ff4444' }}>
                     {friend.timeDiffMs >= 0 
                       ? `+${formatTime(friend.timeDiffMs)} que lui`
                       : `-${formatTime(Math.abs(friend.timeDiffMs))} que lui`}

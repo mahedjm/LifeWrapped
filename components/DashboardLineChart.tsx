@@ -40,8 +40,10 @@ export default function DashboardLineChart({ data, color = '#1db954' }: Dashboar
     } else if (chartRef.current) {
       const ctx = chartRef.current.getContext('2d');
       const gradient = ctx?.createLinearGradient(0, 0, 0, 400);
-      gradient?.addColorStop(0, 'rgba(29, 185, 84, 0.4)');
-      gradient?.addColorStop(1, 'rgba(29, 185, 84, 0)');
+      const rgbaColor = color.startsWith('#') ? hexToRgba(color, 0.4) : color;
+      const transparentColor = color.startsWith('#') ? hexToRgba(color, 0) : color;
+      gradient?.addColorStop(0, rgbaColor);
+      gradient?.addColorStop(1, transparentColor);
 
       chartInstance.current = new Chart(chartRef.current, {
         type: 'line',

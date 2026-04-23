@@ -14,6 +14,7 @@ import NowPlaying from '@/components/NowPlaying';
 import FriendsActivity from '@/components/FriendsActivity';
 import FriendsList from '@/components/FriendsList';
 import FriendProfileModal from '@/components/FriendProfileModal';
+import FloatingActions from '@/components/FloatingActions';
 
 import ShareCard from '@/components/ShareCard';
 import InfoTooltip from '@/components/InfoTooltip';
@@ -37,7 +38,7 @@ export default function Home() {
   const [trackLimit, setTrackLimit] = useState<number>(5);
   const [showArtistLimit, setShowArtistLimit] = useState(false);
   const [showTrackLimit, setShowTrackLimit] = useState(false);
-  const [activeTab, setActiveTab] = useState('accueil');
+  const [activeTab, setActiveTab] = useState<'accueil' | 'amis' | 'club'>('accueil');
   const [showPalette, setShowPalette] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
@@ -129,7 +130,7 @@ export default function Home() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.bottom-nav')) {
+      if (!target.closest('.bottom-nav') && !target.closest('.floating-actions-container')) {
         setShowPalette(false);
         setShowAccount(false);
       }
@@ -242,6 +243,9 @@ export default function Home() {
               <button className={activeTab === 'accueil' ? 'active' : ''} onClick={() => { setActiveTab('accueil'); setShowPalette(false); setShowNotifications(false); }}>
                 <Music size={18} /> Accueil
               </button>
+              <button className={activeTab === 'club' ? 'active' : ''} onClick={() => { setActiveTab('club'); setShowPalette(false); setShowNotifications(false); }}>
+                <Zap size={18} /> Club
+              </button>
               <button className={activeTab === 'amis' ? 'active' : ''} onClick={() => { setActiveTab('amis'); setShowPalette(false); setShowNotifications(false); }}>
                 <Users size={18} /> Amis
               </button>
@@ -336,11 +340,29 @@ export default function Home() {
 
       {activeTab === 'amis' ? (
         <FriendsList onFriendClick={(id) => setSelectedFriendId(id)} refreshKey={friendsRefreshKey} />
+      ) : activeTab === 'club' ? (
+        <div>
+          <div className="section-badge-container" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
+              padding: '8px 24px',
+              borderRadius: '50px',
+              border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+            }}>
+              <Zap size={18} color="var(--accent-green)" />
+              <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Le Club
+              </h2>
+            </div>
+          </div>
+          <FriendsActivity onFriendClick={(id) => setSelectedFriendId(id)} />
+        </div>
       ) : (
         <>
-          {/* Activité des amis (Social Feed) - Uniquement sur l'accueil */}
-          <FriendsActivity onFriendClick={(id) => setSelectedFriendId(id)} />
-
           {/* KPI Cards (Aujourd'hui, Semaine, Record) */}
           <div className="kpi-grid">
             <div className="card animated" style={{ animationDelay: '0.1s' }}>
@@ -426,7 +448,7 @@ export default function Home() {
                 <h3 style={{ fontSize: '1.5rem', margin: '0 0 5px 0', fontWeight: 800 }}>{stats.obsession.title}</h3>
                 <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', margin: 0 }}>{stats.obsession.artist}</p>
                 <div style={{ marginTop: '12px', display: 'inline-block', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '16px', fontSize: '0.85rem' }}>
-                  <span style={{ fontWeight: 800, color: 'white' }}>{stats.obsession.play_count}</span> écoutes sur les dernières 48h
+                  <span style={{ fontWeight: 800, color: 'var(--accent-green)' }}>{stats.obsession.play_count} {stats.obsession.play_count > 1 ? 'écoutes' : 'écoute'}</span> sur les dernières 48h
                 </div>
               </div>
             </div>
@@ -991,40 +1013,22 @@ export default function Home() {
         </div>
       )}
 
-      {/* Floating Action Buttons */}
-      <div className="mobile-only fab-container">
-        <button 
-          className={`fab fab-palette ${showPalette ? 'active' : ''}`}
-          onClick={() => {
-            setShowPalette(!showPalette);
-            setShowAccount(false);
-            setShowNotifications(false);
-          }}
-          title="Thème"
-          style={{ marginBottom: '12px' }}
-        >
-          <Palette size={22} />
-        </button>
-        <button 
-          className="fab fab-share" 
-          onClick={handleExport}
-          disabled={syncing || !stats}
-          title="Partager"
-        >
-          <Share2 size={22} />
-        </button>
-        <div className="fab-sync-wrapper">
-          {manualSyncing && <span className="sync-label">Synchronisation...</span>}
-          <button 
-            className="fab fab-sync" 
-            onClick={() => fetchStats(true, period, trackPeriod, chartPeriod, artistLimit, trackLimit, true, period, trackPeriod)} 
-            disabled={syncing}
-            title="Synchroniser"
-          >
-            <RefreshCw size={22} className={syncing ? 'animate-spin' : ''} />
-          </button>
-        </div>
-      </div>
+      {/* Boutons Flottants (Mobile) - Centralisés dans un composant pour plus de clarté */}
+      <FloatingActions 
+        themeColor={themeColor}
+        setThemeColor={setThemeColor}
+        showPalette={showPalette}
+        setShowPalette={setShowPalette}
+        handleExport={handleExport}
+        fetchStats={(manual) => fetchStats(manual, period, trackPeriod, chartPeriod, artistLimit, trackLimit, true, period, trackPeriod)}
+        syncing={syncing}
+        manualSyncing={manualSyncing}
+        hasStats={!!stats}
+        onActionStart={() => {
+          setShowAccount(false);
+          setShowNotifications(false);
+        }}
+      />
         </div>
       </div>
     )}
@@ -1068,17 +1072,18 @@ export default function Home() {
         </button>
 
         <div 
-          className={`nav-item ${showPalette ? 'active' : ''}`}
+          className={`nav-item ${activeTab === 'club' ? 'active' : ''}`}
           onClick={() => {
-            setShowPalette(!showPalette);
+            setActiveTab('club');
+            setShowPalette(false);
             setShowAccount(false);
             setShowNotifications(false);
           }}
         >
           <div className="icon-wrapper">
-            <Palette size={24} />
+            <Zap size={24} color={activeTab === 'club' ? 'var(--accent-green)' : 'var(--text-secondary)'} />
           </div>
-          <span>Thème</span>
+          <span>Club</span>
         </div>
 
         <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleNotifications(); setShowPalette(false); setShowAccount(false); }}>
@@ -1104,31 +1109,6 @@ export default function Home() {
         </div>
 
         {/* Floating Centered Popups */}
-        {showPalette && (
-          <div className="palette-popup" onClick={(e) => e.stopPropagation()}>
-            {PALETTES.map(p => (
-              <button
-                key={p.id}
-                onClick={() => {
-                  setThemeColor(p.color);
-                  setShowPalette(false);
-                }}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  backgroundColor: p.color,
-                  border: themeColor === p.color ? '2px solid white' : 'none',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s'
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Deleted Coming Soon popup */}
-
         {showAccount && stats?.username && (
           <div className="palette-popup" style={{ flexDirection: 'column', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem' }}>@{stats.username}</div>
@@ -1151,10 +1131,12 @@ export default function Home() {
           </div>
         )}
       </nav>
+      
 
       <style jsx>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin { animation: spin 1s linear infinite; }
+
         
         .custom-select-btn {
           display: flex;
