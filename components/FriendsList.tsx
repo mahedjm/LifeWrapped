@@ -1,0 +1,334 @@
+'use client';
+
+import { UserPlus, UserMinus, Search, Loader2, Users, Share2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+export default function FriendsList({ onFriendClick }: { onFriendClick?: (id: string) => void }) {
+  const [friends, setFriends] = useState<{ id: string, username: string }[]>([]);
+  const [newFriend, setNewFriend] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchFriends = async () => {
+    try {
+      const res = await fetch('/api/friends');
+      const data = await res.json();
+      if (data.friends) setFriends(data.friends);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFriends();
+
+    // Gestion du lien d'invitation (remplissage auto du champ)
+    const urlParams = new URLSearchParams(window.location.search);
+    const invite = urlParams.get('invite');
+    if (invite) {
+      setNewFriend(invite);
+    }
+  }, []);
+
+  const handleAddFriend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFriend.trim()) return;
+    
+    setAdding(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/friends', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newFriend.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNewFriend('');
+        fetchFriends();
+      } else {
+        setError(data.error);
+      }
+    } catch (e) {
+      setError('Erreur lors de l\'ajout');
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleRemoveFriend = async (friendId: string) => {
+    if (!confirm('Voulez-vous vraiment retirer cet ami ?')) return;
+    try {
+      await fetch('/api/friends', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ friendId })
+      });
+      fetchFriends();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  return (
+    <div className="friends-list-container">
+       <style jsx>{`
+        .friends-list-container {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px;
+          padding: 30px;
+          backdrop-filter: blur(20px);
+          animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .add-friend-form {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 30px;
+          align-items: center;
+        }
+        .input-wrapper {
+          position: relative;
+          flex: 1;
+          display: flex;
+          align-items: center;
+        }
+        input {
+          width: 100%;
+          height: 50px;
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--glass-border);
+          border-radius: 14px;
+          padding: 0 20px;
+          color: white;
+          font-size: 1rem;
+          outline: none;
+          transition: all 0.2s;
+        }
+        @media (max-width: 600px) {
+          .add-friend-form {
+            flex-direction: row;
+            gap: 10px;
+          }
+          .btn-add {
+            width: 50px;
+            height: 50px;
+            padding: 0 !important;
+            justify-content: center;
+          }
+          input {
+            height: 50px;
+            padding: 0 15px;
+            font-size: 0.95rem;
+          }
+          .friends-list-container {
+            padding: 20px 15px;
+          }
+          h2, h3 {
+            text-align: center;
+          }
+          .section-title-wrapper {
+            justify-content: center !important;
+          }
+        }
+        input:focus {
+          border-color: var(--accent-green);
+          background: rgba(0, 0, 0, 0.4);
+          box-shadow: 0 0 15px rgba(29, 185, 84, 0.1);
+        }
+        .btn-add {
+          height: 50px;
+          background: var(--accent-green);
+          color: black;
+          border: none;
+          border-radius: 14px;
+          padding: 0 25px;
+          font-weight: 800;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: all 0.2s;
+        }
+        .btn-add:hover { 
+          background: var(--accent-green-hover);
+        }
+        .btn-add:active { 
+          transform: scale(0.96);
+        }
+        .btn-add:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-share-invite {
+          height: 50px;
+          width: 50px;
+          background: rgba(255, 255, 255, 0.05);
+          color: white;
+          border: 1px solid var(--glass-border);
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .btn-share-invite:hover {
+          background: rgba(255, 255, 255, 0.1);
+          transform: translateY(-2px);
+        }
+
+        .friends-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+        }
+        .friend-card {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--glass-border);
+          border-radius: 16px;
+          padding: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: all 0.2s;
+          cursor: pointer;
+          gap: 15px;
+        }
+        .friend-card:hover {
+          background: rgba(255, 255, 255, 0.06);
+          border-color: var(--accent-green);
+          transform: translateY(-2px);
+        }
+        .friend-name {
+          font-weight: 700;
+          font-size: 1.1rem;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .remove-btn {
+          background: rgba(255, 68, 68, 0.05);
+          color: #ff4444;
+          border: 1px solid rgba(255, 68, 68, 0.1);
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .remove-btn:hover { 
+          background: #ff4444; 
+          color: white;
+          transform: rotate(90deg);
+        }
+        .error-msg {
+          background: rgba(255, 68, 68, 0.1);
+          border: 1px solid rgba(255, 68, 68, 0.2);
+          color: #ff4444;
+          padding: 12px 20px;
+          border-radius: 12px;
+          font-size: 0.9rem;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+      `}</style>
+
+      <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '25px', color: 'white' }}>Gestion des Amis</h2>
+      
+      {error && <div className="error-msg"><Search size={16} /> {error}</div>}
+
+      <form className="add-friend-form" onSubmit={handleAddFriend}>
+        <div className="input-wrapper">
+          <input 
+            type="text" 
+            placeholder={loading ? "Chargement..." : "Nom d'utilisateur LastFm"} 
+            value={newFriend}
+            onChange={(e) => setNewFriend(e.target.value)}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn-add" type="submit" disabled={adding} title="Ajouter un ami">
+            {adding ? <Loader2 size={20} className="animate-spin" /> : <UserPlus size={20} />}
+            <span className="desktop-only">Ajouter</span>
+          </button>
+          <button 
+            type="button"
+            className="btn-share-invite" 
+            onClick={() => {
+              const username = document.cookie.split('; ').find(row => row.startsWith('lastfm_username='))?.split('=')[1];
+              const url = `${window.location.origin}/?invite=${username}`;
+              navigator.clipboard.writeText(url);
+              alert("Lien d'invitation copié dans le presse-papier !");
+            }}
+            title="Partager mon lien d'invitation"
+          >
+            <Share2 size={20} />
+          </button>
+        </div>
+      </form>
+
+      <div style={{ height: '1px', background: 'var(--glass-border)', margin: '40px 0' }} />
+
+      <div className="section-title-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Vos Amis ({friends.length})</h3>
+      </div>
+
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+          <Loader2 className="animate-spin" size={40} color="var(--accent-green)" />
+        </div>
+      ) : friends.length === 0 ? (
+        <div style={{ 
+          textAlign: 'center', 
+          opacity: 0.5, 
+          padding: '60px', 
+          background: 'rgba(255,255,255,0.01)', 
+          borderRadius: '20px',
+          border: '1px dashed var(--glass-border)'
+        }}>
+          <Users size={40} style={{ marginBottom: '15px', opacity: 0.3 }} />
+          <p>Vous n'avez pas encore d'amis sur Écho.</p>
+          <p style={{ fontSize: '0.9rem' }}>Partagez votre dashboard pour inviter vos amis !</p>
+        </div>
+      ) : (
+        <div className="friends-grid">
+          {friends.map(friend => (
+            <div key={friend.id} className="friend-card" onClick={() => onFriendClick?.(friend.id)}>
+              <div className="friend-name">
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  background: 'var(--accent-green)', 
+                  borderRadius: '50%', 
+                  color: 'black', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '0.9rem',
+                  fontWeight: 900
+                }}>
+                  {friend.username.charAt(0).toUpperCase()}
+                </div>
+                @{friend.username}
+              </div>
+              <button className="remove-btn" onClick={() => handleRemoveFriend(friend.id)} title="Retirer l'ami">
+                <UserMinus size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

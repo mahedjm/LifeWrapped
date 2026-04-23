@@ -6,11 +6,15 @@ import {
   Activity, Clock, Calendar, BarChart3, RefreshCw, 
   AlertCircle, Music, ChevronDown, PieChart, HelpCircle, 
   Share2, LogOut, User, Palette, Users, Bell, 
-  Search, TrendingUp, Award, Grid, Zap, Info, Layers
+  Search, TrendingUp, Award, Grid, Zap, Info, Layers, X
 } from 'lucide-react';
 import DashboardChart from '@/components/DashboardChart';
 import DashboardLineChart from '@/components/DashboardLineChart';
 import NowPlaying from '@/components/NowPlaying';
+import FriendsActivity from '@/components/FriendsActivity';
+import FriendsList from '@/components/FriendsList';
+import FriendProfileModal from '@/components/FriendProfileModal';
+
 import ShareCard from '@/components/ShareCard';
 import InfoTooltip from '@/components/InfoTooltip';
 
@@ -36,7 +40,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('accueil');
   const [showPalette, setShowPalette] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
-  const [showFriends, setShowFriends] = useState(false);
+  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   
   // Custom Hooks (Logic extraction)
   const { themeColor, setThemeColor } = useTheme();
@@ -45,7 +49,7 @@ export default function Home() {
     loadingChart, setLoadingChart, error, fetchStats 
   } = useStats(period, trackPeriod, chartPeriod, artistLimit, trackLimit);
   const { 
-    showNotifications, setShowNotifications, notifications, toggleNotifications 
+    showNotifications, setShowNotifications, notifications, toggleNotifications, removeNotification, respondToFriendRequest 
   } = useNotifications();
 
   // Navigation & UI references
@@ -127,7 +131,6 @@ export default function Home() {
       if (!target.closest('.bottom-nav')) {
         setShowPalette(false);
         setShowAccount(false);
-        setShowFriends(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -220,16 +223,34 @@ export default function Home() {
         {/* --- DESKTOP HEADER (Original) --- */}
         <div className="desktop-only">
           <div className="header-top">
-            <div className="logo-container">
+            <div className="logo-container" onClick={() => { setActiveTab('accueil'); setShowPalette(false); setShowNotifications(false); }} style={{ cursor: 'pointer' }}>
               <div className="logo-wave" />
               <div className="logo-wave" />
               <div className="logo-wave" />
               <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor || '#1DB954', position: 'relative', zIndex: 2 }}>Écho</h1>
             </div>
+
+            <nav className="desktop-nav">
+              <button className={activeTab === 'accueil' ? 'active' : ''} onClick={() => { setActiveTab('accueil'); setShowPalette(false); setShowNotifications(false); }}>
+                <Music size={18} /> Accueil
+              </button>
+              <button className={activeTab === 'amis' ? 'active' : ''} onClick={() => { setActiveTab('amis'); setShowPalette(false); setShowNotifications(false); }}>
+                <Users size={18} /> Amis
+              </button>
+            </nav>
             
             {stats?.username && (
               <div className="header-controls">
-                <div className="notif-wrapper" style={{ marginRight: '10px' }}>
+                <div className="user-badge">
+                  <div className="user-info">
+                    <User size={14} />
+                    <span>Connecté en tant que&nbsp;</span>
+                    <strong>{stats.username}</strong>
+                  </div>
+                  <button className="logout-btn" onClick={handleLogout}><LogOut size={18} /></button>
+                </div>
+
+                <div className="notif-wrapper" style={{ marginLeft: '10px' }}>
                   <button 
                     className="notif-btn" 
                     onClick={(e) => {
@@ -240,17 +261,6 @@ export default function Home() {
                     <Bell size={20} />
                     {notifications.some(n => !n.read) && <div className="notif-badge" />}
                   </button>
-                  
-                  
-                </div>
-
-                <div className="user-badge">
-                  <div className="user-info">
-                    <User size={14} />
-                    <span>Connecté en tant que&nbsp;</span>
-                    <strong>{stats.username}</strong>
-                  </div>
-                  <button className="logout-btn" onClick={handleLogout}><LogOut size={18} /></button>
                 </div>
               </div>
             )}
@@ -316,132 +326,130 @@ export default function Home() {
       {/* Mode Party (En direct) */}
       <NowPlaying track={nowPlaying} />
 
-      {/* Hidden Share Card for Export */}
-      <ShareCard 
-        ref={shareCardRef} 
-        themeColor={themeColor || '#1DB954'}
-        stats={stats ? {
-          topArtists: stats.topArtists,
-          weeklyTotalMs: stats.weekly?.reduce((acc, curr) => acc + curr.ms, 0) || 0,
-          obsession: stats.obsession
-        } : null} 
-      />
+      {activeTab === 'amis' ? (
+        <FriendsList onFriendClick={(id) => setSelectedFriendId(id)} />
+      ) : (
+        <>
+          {/* Activité des amis (Social Feed) - Uniquement sur l'accueil */}
+          <FriendsActivity onFriendClick={(id) => setSelectedFriendId(id)} />
 
-      <div className="section-badge-container" style={{ 
-        marginBottom: '25px', 
-        color: 'var(--text-primary)', 
-        marginTop: '20px' 
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-          padding: '8px 24px',
-          borderRadius: '50px',
-          border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-        }}>
-          <Activity size={18} color="var(--accent-green)" />
-          <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            Résumé d'écoute
-            <InfoTooltip text="Statistiques globales basées sur l'intégralité de votre historique local." />
-          </h2>
-        </div>
-      </div>
+          {/* KPI Cards (Aujourd'hui, Semaine, Record) */}
+          <div className="kpi-grid">
+            <div className="card animated" style={{ animationDelay: '0.1s' }}>
+              <div className="card-title">Aujourd'hui</div>
+              <div className="card-value">{formatTime(stats?.today || 0)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                {stats?.yesterday !== undefined && stats.yesterday > 0 && (() => {
+                  const diffMs = (stats.today || 0) - stats.yesterday;
+                  const isPos = diffMs >= 0;
+                  return (
+                    <span style={{ 
+                      fontSize: '0.85rem', 
+                      fontWeight: 700, 
+                      color: isPos ? '#1ed760' : '#ff4444',
+                      background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
+                      padding: '2px 8px',
+                      borderRadius: '12px'
+                    }}>
+                      {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
+                    </span>
+                  );
+                })()}
+                <span className="card-sub">vs hier</span>
+              </div>
+            </div>
 
-      <div className="kpi-grid">
-        <div className="card animated" style={{ animationDelay: '0.1s' }}>
-          <div className="card-title">Aujourd'hui</div>
-          <div className="card-value">{formatTime(stats?.today || 0)}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-            {stats?.yesterday !== undefined && stats.yesterday > 0 && (() => {
-              const diffMs = stats.today - stats.yesterday;
-              const isPos = diffMs >= 0;
-              return (
-                <span style={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: 700, 
-                  color: isPos ? '#1ed760' : '#ff4444',
-                  background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
-                  padding: '2px 8px',
-                  borderRadius: '12px'
-                }}>
-                  {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
-                </span>
-              );
-            })()}
-            <span className="card-sub">vs hier</span>
-          </div>
-        </div>
+            <div className="card animated" style={{ animationDelay: '0.2s' }}>
+              <div className="card-title">Cette Semaine</div>
+              <div className="card-value">{formatTime(weeklyTotalMs)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                {stats?.prevWeekTotal !== undefined && stats.prevWeekTotal > 0 && (() => {
+                  const diffMs = weeklyTotalMs - stats.prevWeekTotal;
+                  const isPos = diffMs >= 0;
+                  return (
+                    <span style={{ 
+                      fontSize: '0.85rem', 
+                      fontWeight: 700, 
+                      color: isPos ? '#1ed760' : '#ff4444',
+                      background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
+                      padding: '2px 8px',
+                      borderRadius: '12px'
+                    }}>
+                      {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
+                    </span>
+                  );
+                })()}
+                <span className="card-sub">vs semaine dernière</span>
+              </div>
+            </div>
 
-        <div className="card animated" style={{ animationDelay: '0.2s' }}>
-          <div className="card-title">Cette Semaine</div>
-          <div className="card-value">{formatTime(weeklyTotalMs)}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-            {stats?.prevWeekTotal !== undefined && stats.prevWeekTotal > 0 && (() => {
-              const diffMs = weeklyTotalMs - stats.prevWeekTotal;
-              const isPos = diffMs >= 0;
-              return (
-                <span style={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: 700, 
-                  color: isPos ? '#1ed760' : '#ff4444',
-                  background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
-                  padding: '2px 8px',
-                  borderRadius: '12px'
-                }}>
-                  {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
-                </span>
-              );
-            })()}
-            <span className="card-sub">vs semaine dernière</span>
-          </div>
-        </div>
-
-        <div className="card animated" style={{ animationDelay: '0.3s' }}>
-          <div className="card-title">Top Intensité</div>
-          <div className="card-value">
-            {stats?.weekly?.length ? formatTime(Math.max(...stats.weekly.map(d => d.ms))) : '0 min'}
-          </div>
-          <div className="card-sub">Record quotidien des 7 derniers jours</div>
-        </div>
-      </div>
-
-
-      {/* Section Obsession */}
-      {stats?.obsession && (
-        <div className="card animated obsession-card" style={{ 
-          animationDelay: '0.35s', 
-          marginBottom: '30px', 
-          background: `linear-gradient(135deg, color-mix(in srgb, var(--accent-green), transparent 90%) 0%, rgba(0,0,0,0) 100%)`, 
-          border: '1px solid color-mix(in srgb, var(--accent-green), transparent 70%)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '20px', 
-          padding: '24px' 
-        }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{ width: '100px', height: '100px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 8px 20px rgba(0,0,0,0.4)', position: 'relative' }}>
-              <img src={stats.obsession.image_url} alt={stats.obsession.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 800 }}>🔥 CHAUD</div>
+            <div className="card animated" style={{ animationDelay: '0.3s' }}>
+              <div className="card-title">Top Intensité</div>
+              <div className="card-value">
+                {stats?.weekly?.length ? formatTime(Math.max(...stats.weekly.map(d => d.ms))) : '0 min'}
+              </div>
+              <div className="card-sub">Record quotidien des 7 derniers jours</div>
             </div>
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: 'var(--accent-green)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              Obsession du moment
-              <InfoTooltip text="Le morceau que vous avez le plus écouté au cours des dernières 48 heures." />
-            </div>
-            <h3 style={{ fontSize: '1.5rem', margin: '0 0 5px 0', fontWeight: 800 }}>{stats.obsession.title}</h3>
-            <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', margin: 0 }}>{stats.obsession.artist}</p>
-            <div style={{ marginTop: '12px', display: 'inline-block', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '16px', fontSize: '0.85rem' }}>
-              <span style={{ fontWeight: 800, color: 'white' }}>{stats.obsession.play_count}</span> écoutes sur les dernières 48h
-            </div>
-          </div>
-        </div>
-      )}
 
-      <div className="chart-container animated" style={{ animationDelay: '0.4s', position: 'relative' }}>
+          {/* Section Obsession */}
+          {stats?.obsession && (
+            <div className="card animated obsession-card" style={{ 
+              animationDelay: '0.35s', 
+              marginBottom: '30px', 
+              background: `linear-gradient(135deg, color-mix(in srgb, var(--accent-green), transparent 90%) 0%, rgba(0,0,0,0) 100%)`, 
+              border: '1px solid color-mix(in srgb, var(--accent-green), transparent 70%)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '20px', 
+              padding: '24px' 
+            }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{ width: '100px', height: '100px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 8px 20px rgba(0,0,0,0.4)', position: 'relative' }}>
+                  <img src={stats.obsession.image_url} alt={stats.obsession.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 800 }}>🔥 CHAUD</div>
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: 'var(--accent-green)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  Obsession du moment
+                  <InfoTooltip text="Le morceau que vous avez le plus écouté au cours des dernières 48 heures." />
+                </div>
+                <h3 style={{ fontSize: '1.5rem', margin: '0 0 5px 0', fontWeight: 800 }}>{stats.obsession.title}</h3>
+                <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', margin: 0 }}>{stats.obsession.artist}</p>
+                <div style={{ marginTop: '12px', display: 'inline-block', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '16px', fontSize: '0.85rem' }}>
+                  <span style={{ fontWeight: 800, color: 'white' }}>{stats.obsession.play_count}</span> écoutes sur les dernières 48h
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Dashboard Stats */}
+          {stats && (
+            <div className="dashboard-grid animated">
+              <div className="main-column">
+                <div className="stats-header" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="section-badge-container">
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
+                      padding: '8px 24px',
+                      borderRadius: '50px',
+                      border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                    }}>
+                      <Activity size={18} color="var(--accent-green)" />
+                      <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        Résumé d'écoute
+                        <InfoTooltip text="Statistiques globales basées sur l'intégralité de votre historique local." />
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="chart-container animated" style={{ animationDelay: '0.4s', position: 'relative' }}>
         {loadingChart && (
           <div style={{ 
             position: 'absolute', 
@@ -997,14 +1005,21 @@ export default function Home() {
           </button>
         </div>
       </div>
+        </div>
+      </div>
+    )}
+      </>
+      )}
 
-      {/* Bottom Navigation Bar */}
       <nav className="bottom-nav">
         <div 
           className={`nav-item ${activeTab === 'accueil' ? 'active' : ''}`}
           onClick={() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setActiveTab('accueil');
+            setShowPalette(false);
+            setShowAccount(false);
+            setShowNotifications(false);
           }}
         >
           <div className="icon-wrapper">
@@ -1018,7 +1033,7 @@ export default function Home() {
           onClick={() => {
             setShowPalette(!showPalette);
             setShowAccount(false);
-            setShowFriends(false);
+            setShowNotifications(false);
           }}
         >
           <div className="icon-wrapper">
@@ -1027,12 +1042,26 @@ export default function Home() {
           <span>Thème</span>
         </div>
 
-        <button className={`nav-item ${showFriends ? 'active' : ''}`} onClick={() => { setShowFriends(true); setActiveTab('amis'); setShowPalette(false); setShowAccount(false); setShowNotifications(false); }}>
-          <Users size={24} color={showFriends ? 'var(--accent-green)' : 'var(--text-secondary)'} />
+        <button className={`nav-item ${activeTab === 'amis' ? 'active' : ''}`} onClick={() => { setActiveTab('amis'); setShowPalette(false); setShowAccount(false); setShowNotifications(false); }}>
+          <div style={{ position: 'relative' }}>
+            <Users size={24} color={activeTab === 'amis' ? 'var(--accent-green)' : 'var(--text-secondary)'} />
+            {notifications.some(n => n.type === 'friend_request') && (
+              <div style={{ 
+                position: 'absolute', 
+                top: '-2px', 
+                right: '-2px', 
+                width: '8px', 
+                height: '8px', 
+                background: '#ff4444', 
+                borderRadius: '50%',
+                border: '2px solid var(--bg-dark)'
+              }} />
+            )}
+          </div>
           <span>Amis</span>
         </button>
 
-        <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleNotifications(); setShowPalette(false); setShowFriends(false); setShowAccount(false); }}>
+        <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleNotifications(); setShowPalette(false); setShowAccount(false); }}>
           <div style={{ position: 'relative' }}>
             <Bell size={24} color={showNotifications ? 'var(--accent-green)' : 'var(--text-secondary)'} />
             {notifications.some(n => !n.read) && <div className="notif-badge" style={{ top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'red', borderRadius: '50%', position: 'absolute' }} />}
@@ -1045,7 +1074,7 @@ export default function Home() {
           onClick={() => {
             setShowAccount(!showAccount);
             setShowPalette(false);
-            setShowFriends(false);
+            setShowNotifications(false);
           }}
         >
           <div className="icon-wrapper">
@@ -1078,12 +1107,7 @@ export default function Home() {
           </div>
         )}
 
-        {showFriends && (
-          <div className="palette-popup" style={{ gap: '10px', padding: '15px 25px' }} onClick={(e) => e.stopPropagation()}>
-            <Clock size={20} className="animate-pulse" style={{ color: 'var(--accent-green)' }} />
-            <span style={{ color: 'white', fontWeight: 600, fontSize: '0.95rem' }}>Coming soon...</span>
-          </div>
-        )}
+        {/* Deleted Coming Soon popup */}
 
         {showAccount && stats?.username && (
           <div className="palette-popup" style={{ flexDirection: 'column', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
@@ -1197,14 +1221,86 @@ export default function Home() {
             <h4 style={{ margin: 0 }}>Notifications</h4>
             <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>{notifications.length} message(s)</span>
           </div>
-          {notifications.map(n => (
-            <div key={n.id} className={`notif-item ${!n.read ? 'new' : ''}`}>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>{n.title}</div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '4px' }}>{n.message}</div>
-              <div style={{ fontSize: '0.7rem', opacity: 0.4 }}>{n.date}</div>
+          {notifications.length === 0 ? (
+            <div style={{ padding: '20px', textAlign: 'center', opacity: 0.5, fontSize: '0.9rem' }}>
+              Aucune notification
+            </div>
+          ) : notifications.map(n => (
+            <div key={n.id} className={`notif-item ${n.status === 'unread' ? 'new' : ''}`} style={{ position: 'relative' }}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeNotification(n.id);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#ff4444',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: 0.6,
+                  transition: 'opacity 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '0.6'}
+              >
+                <X size={14} />
+              </button>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px', paddingRight: '20px' }}>{n.title}</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '4px', paddingRight: '20px', lineHeight: '1.4' }}>{n.message}</div>
+              
+              {n.type === 'friend_request' && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px', marginBottom: '8px' }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); respondToFriendRequest(n.id, 'accept'); }}
+                    style={{ 
+                      background: 'var(--accent-green)', 
+                      color: 'black', 
+                      border: 'none', 
+                      borderRadius: '8px', 
+                      padding: '6px 12px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 700,
+                      fontFamily: 'inherit',
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    Accepter
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); respondToFriendRequest(n.id, 'decline'); }}
+                    style={{ 
+                      background: 'rgba(255, 255, 255, 0.05)', 
+                      color: 'white', 
+                      border: '1px solid var(--glass-border)', 
+                      borderRadius: '8px', 
+                      padding: '6px 12px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 700,
+                      fontFamily: 'inherit',
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    Refuser
+                  </button>
+                </div>
+              )}
+              
             </div>
           ))}
         </div>
+      )}
+      {selectedFriendId && (
+        <FriendProfileModal 
+          friendId={selectedFriendId} 
+          onClose={() => setSelectedFriendId(null)} 
+        />
       )}
     </main>
   );

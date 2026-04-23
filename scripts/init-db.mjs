@@ -54,6 +54,13 @@ async function main() {
         PRIMARY KEY(artist_name, track_name)
       );
 
+      CREATE TABLE IF NOT EXISTS friendships (
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        friend_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, friend_id)
+      );
+
       CREATE TABLE IF NOT EXISTS auth (
         id_key TEXT PRIMARY KEY,
         id_value TEXT
