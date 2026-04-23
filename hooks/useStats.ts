@@ -25,7 +25,8 @@ export function useStats(
     currentTrackLimit = initialTrackLimit,
     isManual = false,
     activePeriod = initialPeriod,
-    activeTrackPeriod = initialTrackPeriod
+    activeTrackPeriod = initialTrackPeriod,
+    forceLoading = false
   ) => {
     // Annulation de la requête précédente si elle existe encore
     if (abortControllerRef.current) {
@@ -37,6 +38,7 @@ export function useStats(
 
     if (sync) setSyncing(true);
     if (isManual) setManualSyncing(true);
+    if (forceLoading) setLoading(true);
     
     try {
       const url = new URL('/api/stats', window.location.origin);

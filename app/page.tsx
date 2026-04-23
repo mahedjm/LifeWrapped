@@ -53,6 +53,7 @@ export default function Home() {
   const lastTrackId = useRef<string | null>(null);
   const nowPlayingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
+  const lastFetchDateRef = useRef<string>(new Date().toLocaleDateString());
 
   // Polling pour le Mode Party (Now Playing) + Smart Sync
   useEffect(() => {
@@ -96,15 +97,25 @@ export default function Home() {
       }
     };
 
+    const handleFocus = () => {
+      const today = new Date().toLocaleDateString();
+      if (lastFetchDateRef.current !== today) {
+        console.log('New day detected on focus, forcing refresh...');
+        fetchStats(true, period, trackPeriod, chartPeriod, artistLimit, trackLimit, false, period, trackPeriod, true);
+        lastFetchDateRef.current = today;
+      }
+      checkNowPlaying();
+    };
+
     checkNowPlaying();
     const interval = setInterval(checkNowPlaying, 4000); // 4 secondes pour une réactivité optimale
 
     // Vérification immédiate quand vous revenez sur l'onglet
-    window.addEventListener('focus', checkNowPlaying);
+    window.addEventListener('focus', handleFocus);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('focus', checkNowPlaying);
+      window.removeEventListener('focus', handleFocus);
       if (nowPlayingTimeoutRef.current) clearTimeout(nowPlayingTimeoutRef.current);
     };
   }, []);
