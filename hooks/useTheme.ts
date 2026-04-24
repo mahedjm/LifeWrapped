@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 
 export function useTheme() {
-  const [themeColor, setThemeColor] = useState<string | null>(null);
-
-  useEffect(() => {
-    const savedColor = localStorage.getItem('lw-theme-color');
-    if (savedColor) {
-      setThemeColor(savedColor);
-    } else {
-      setThemeColor('#1DB954'); // Default Spotify Green
+  const [themeColor, setThemeColor] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lw-theme-color') || '#1DB954';
     }
-  }, []);
+    return '#1DB954';
+  });
 
   useEffect(() => {
     if (themeColor) {

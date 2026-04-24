@@ -76,14 +76,14 @@ export function useStats(
         setError(err.message);
       }
     } finally {
-      if (!controller.signal.aborted) {
+      if (controller === abortControllerRef.current) {
         setLoading(false);
         setSyncing(false);
         setLoadingChart(false);
         setManualSyncing(false);
       }
     }
-  }, [initialChartPeriod]);
+  }, [initialPeriod, initialTrackPeriod, initialChartPeriod, initialArtistLimit, initialTrackLimit]);
 
   return {
     stats,

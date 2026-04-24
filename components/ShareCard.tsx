@@ -3,24 +3,26 @@
 import { forwardRef } from 'react';
 import { Music, Clock, Zap } from 'lucide-react';
 
+import { Stats } from '@/lib/types';
+
 interface ShareCardProps {
-  stats: {
-    topArtists: { artist: string; total_ms: number; image_url: string | null }[];
-    weeklyTotalMs: number;
-    obsession?: { title: string; artist: string; image_url: string; play_count: number } | null;
-  } | null;
+  stats: Stats | null;
   themeColor?: string;
 }
 
 const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColor = '#1db954' }, ref) => {
   if (!stats) return null;
 
-  const formatTime = (ms: number) => {
+  const formatTime = (ms: number | undefined) => {
+    if (ms === undefined || isNaN(ms)) return "0h 00min";
     const totalMinutes = Math.floor(ms / (1000 * 60));
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    return `${hours}h ${minutes}min`;
+    return `${hours}h ${minutes < 10 ? '0' : ''}${minutes}min`;
   };
+
+  // Calcul du total de la semaine si non fourni
+  const weeklyTotalMs = stats.weekly?.reduce((acc, day) => acc + (day.ms || 0), 0) || 0;
 
   return (
     <div 
@@ -64,18 +66,29 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
       }}></div>
 
       <div style={{ zIndex: 1, position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
-          <div style={{ background: 'var(--accent-green)', padding: '6px', borderRadius: '8px' }}>
-            <Zap size={20} color="black" />
+        {/* Header - Logo Écho avec ondes fixes */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '40px' }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            {/* Ondes fixes pour la capture */}
+            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '60px', height: '60px', borderRadius: '50%', border: `1px solid ${themeColor}`, opacity: 0.15 }} />
+            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '80px', height: '80px', borderRadius: '50%', border: `1px solid ${themeColor}`, opacity: 0.1 }} />
+            
+            <h1 style={{ 
+              fontSize: '1.5rem', 
+              margin: 0, 
+              fontWeight: 900, 
+              letterSpacing: '-1px', 
+              color: themeColor,
+              position: 'relative',
+              zIndex: 2
+            }}>
+              Écho
+            </h1>
           </div>
-          <h1 style={{ fontSize: '1.2rem', margin: 0, letterSpacing: '-0.5px', fontWeight: 900, color: '#fff', background: 'none' }}>
-            Life<span style={{ color: 'var(--accent-green)' }}>Wrapped</span>
-          </h1>
         </div>
 
         <div style={{ marginBottom: '30px' }}>
-          <p style={{ color: 'var(--accent-green)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.7rem', margin: '0 0 5px 0' }}>Récapitulatif</p>
+          <p style={{ color: themeColor, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.7rem', margin: '0 0 5px 0' }}>Récapitulatif</p>
           <h2 style={{ fontSize: '2.2rem', margin: 0, fontWeight: 900, lineHeight: 1.1 }}>Ma Semaine en Musique</h2>
         </div>
 
@@ -85,7 +98,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {stats.topArtists.slice(0, 5).map((artist, i) => (
               <div key={artist.artist} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ width: '45px', height: '45px', borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ width: '45px', height: '45px', borderRadius: '50%', overflow: 'hidden', border: `2px solid ${themeColor}33` }}>
                   {artist.image_url ? (
                     <img src={artist.image_url} alt={artist.artist} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
@@ -96,7 +109,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{artist.artist}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>#{i + 1} • {Math.round(artist.total_ms / 60000)} min</span>
+                  <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>#{i + 1} • {formatTime(artist.total_ms)}</span>
                 </div>
               </div>
             ))}
@@ -115,37 +128,24 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
           marginBottom: '20px'
         }}>
           <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '12px' }}>
-            <Clock size={20} color="var(--accent-green)" />
+            <Clock size={20} color={themeColor} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>TEMPS TOTAL</div>
-            <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{formatTime(stats.weeklyTotalMs)}</div>
+            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>TEMPS TOTAL D'ÉCOUTE</div>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{formatTime(weeklyTotalMs)}</div>
           </div>
         </div>
 
-        {/* Obsession Fallback or Display */}
-        {stats.obsession ? (
-          <div style={{ marginTop: 'auto', background: `linear-gradient(90deg, ${themeColor}33, transparent)`, padding: '15px', borderRadius: '12px', borderLeft: `4px solid ${themeColor}` }}>
-            <div style={{ fontSize: '0.65rem', fontWeight: 800, color: themeColor, textTransform: 'uppercase', marginBottom: '5px' }}>Obsession du moment</div>
-            <div style={{ fontWeight: 800, fontSize: '1rem' }}>{stats.obsession.title}</div>
-            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>{stats.obsession.artist}</div>
-          </div>
-        ) : (
-          <div style={{ marginTop: 'auto', textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem', paddingBottom: '10px' }}>
-            Généré avec LifeWrapped.com
-          </div>
-        )}
-
         <div style={{ 
           textAlign: 'center', 
-          marginTop: stats.obsession ? '20px' : '0', 
+          marginTop: 'auto', 
           paddingTop: '20px', 
           borderTop: '1px solid rgba(255,255,255,0.05)',
           fontSize: '0.75rem',
           color: 'rgba(255,255,255,0.3)',
           fontWeight: 600
         }}>
-          #myLifeWrapped
+          #monEcho
         </div>
       </div>
     </div>

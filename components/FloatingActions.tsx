@@ -14,6 +14,7 @@ interface FloatingActionsProps {
   syncing: boolean;
   manualSyncing: boolean;
   hasStats: boolean;
+  activeTab: string;
   onActionStart?: () => void;
 }
 
@@ -31,6 +32,7 @@ export default function FloatingActions({
   syncing,
   manualSyncing,
   hasStats,
+  activeTab,
   onActionStart
 }: FloatingActionsProps) {
   
@@ -52,7 +54,19 @@ export default function FloatingActions({
 
   return (
     <div className="floating-actions-container mobile-only">
-      {/* 1. BOUTON PALETTE (CHANGER THÈME) */}
+      {/* 1. BOUTON PARTAGER (GÉNÉRER IMAGE) - Uniquement sur l'accueil */}
+      {activeTab === 'accueil' && (
+        <button 
+          className="fab fab-share" 
+          onClick={handleShare}
+          disabled={syncing || !hasStats}
+          title="Partager mon mois"
+        >
+          <Share2 size={22} />
+        </button>
+      )}
+
+      {/* 2. BOUTON PALETTE (CHANGER THÈME) */}
       <div className="fab-palette-wrapper">
         {showPalette && (
           <div className="palette-slide-out">
@@ -80,16 +94,6 @@ export default function FloatingActions({
           <Palette size={22} color={showPalette ? 'var(--accent-green)' : 'white'} />
         </button>
       </div>
-
-      {/* 2. BOUTON PARTAGER (GÉNÉRER IMAGE) */}
-      <button 
-        className="fab fab-share" 
-        onClick={handleShare}
-        disabled={syncing || !hasStats}
-        title="Partager mon mois"
-      >
-        <Share2 size={22} />
-      </button>
 
       {/* 3. BOUTON SYNCHRONISER (LAST.FM) */}
       <div className="fab-sync-wrapper">

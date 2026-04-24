@@ -56,6 +56,7 @@ export default function Home() {
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [friendsRefreshKey, setFriendsRefreshKey] = useState(0);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+  const [showPhrases, setShowPhrases] = useState(false);
   
   // Custom Hooks (Logic extraction)
   const { themeColor, setThemeColor } = useTheme();
@@ -152,18 +153,30 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Cycle des phrases de chargement
   useEffect(() => {
     if (loading) {
+      // Retard d'apparition pour la première phrase
+      const delayTimer = setTimeout(() => setShowPhrases(true), 1500);
+
       // On commence par une phrase au hasard
       setLoadingPhraseIndex(Math.floor(Math.random() * LOADING_PHRASES.length));
       
       const interval = setInterval(() => {
         setLoadingPhraseIndex(prev => (prev + 1) % LOADING_PHRASES.length);
       }, 3500);
-      return () => clearInterval(interval);
+      
+      return () => {
+        clearInterval(interval);
+        clearTimeout(delayTimer);
+        setShowPhrases(false);
+      };
     }
   }, [loading]);
+
+  // Scroll to top when tab changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
 
   const calculateTrend = () => {
     if (!stats || !stats.previousMonthly) return null;
@@ -214,7 +227,7 @@ export default function Home() {
 
       const image = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
-      link.download = `LifeWrapped_Week_${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `Echo_Stats_${new Date().toISOString().split('T')[0]}.png`;
       link.href = image;
       link.click();
     } catch (err) {
@@ -250,21 +263,23 @@ export default function Home() {
               letterSpacing: '-0.5px', 
               position: 'relative', 
               zIndex: 2,
-              color: themeColor || undefined
+              color: 'var(--accent-green)'
             }}>Écho</h1>
           </div>
         )}
-        <p style={{ 
-          color: 'var(--text-secondary)', 
-          fontSize: '0.95rem', 
-          textAlign: 'center',
-          maxWidth: '300px',
-          lineHeight: '1.5',
-          minHeight: '3em',
-          animation: 'loadingTextFade 3.5s ease-in-out'
-        }} key={loadingPhraseIndex}>
-          {LOADING_PHRASES[loadingPhraseIndex]}
-        </p>
+        {showPhrases && (
+          <p style={{ 
+            color: 'var(--text-secondary)', 
+            fontSize: '0.95rem', 
+            textAlign: 'center',
+            maxWidth: '300px',
+            lineHeight: '1.5',
+            minHeight: '3em',
+            animation: 'loadingTextFade 3.5s ease-in-out'
+          }} key={loadingPhraseIndex}>
+            {LOADING_PHRASES[loadingPhraseIndex]}
+          </p>
+        )}
       </div>
     );
   }
@@ -282,7 +297,7 @@ export default function Home() {
               <div className="logo-wave" />
               <div className="logo-wave" />
               <div className="logo-wave" />
-              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor || '#1DB954', position: 'relative', zIndex: 2 }}>Écho</h1>
+              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: 'var(--accent-green)', position: 'relative', zIndex: 2 }}>Écho</h1>
             </div>
 
             <nav className="desktop-nav">
@@ -367,7 +382,7 @@ export default function Home() {
               <div className="logo-wave" />
               <div className="logo-wave" />
               <div className="logo-wave" />
-              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: themeColor || '#1DB954', position: 'relative', zIndex: 2 }}>Écho</h1>
+              <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: 'var(--accent-green)', position: 'relative', zIndex: 2 }}>Écho</h1>
             </div>
           </div>
         </div>
@@ -1059,6 +1074,13 @@ export default function Home() {
         </div>
       )}
 
+
+        </div>
+      </div>
+    )}
+      </>
+      )}
+
       {/* Boutons Flottants (Mobile) - Centralisés dans un composant pour plus de clarté */}
       <FloatingActions 
         themeColor={themeColor || '#1DB954'}
@@ -1070,16 +1092,12 @@ export default function Home() {
         syncing={syncing}
         manualSyncing={manualSyncing}
         hasStats={!!stats}
+        activeTab={activeTab}
         onActionStart={() => {
           setShowAccount(false);
           setShowNotifications(false);
         }}
       />
-        </div>
-      </div>
-    )}
-      </>
-      )}
 
       <nav className="bottom-nav">
         <div 
@@ -1344,6 +1362,13 @@ export default function Home() {
           ))}
         </div>
       )}
+      {/* Composant caché pour l'export d'image */}
+      {stats && (
+        <div style={{ position: 'fixed', left: '-9999px', top: '0', zIndex: -1 }}>
+          <ShareCard ref={shareCardRef} stats={stats} themeColor={themeColor} />
+        </div>
+      )}
+
       {selectedFriendId && (
         <FriendProfileModal 
           friendId={selectedFriendId} 
