@@ -70,7 +70,59 @@ export default function FriendsActivity({ onFriendClick }: FriendsActivityProps)
     );
   }
   
-  if (!loading && activities.length === 0) return null;
+  // On considère le club "vide" s'il n'y a que nous (isMe) ou personne
+  const otherActivities = activities.filter(a => !a.isMe);
+  const isAlone = otherActivities.length === 0;
+
+  if (!loading && isAlone) {
+    return (
+      <div className="friends-activity-container animated" style={{ animationDelay: '0.2s' }}>
+        <div className="section-badge-container" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
+            padding: '8px 24px',
+            borderRadius: '50px',
+            border: '1px solid color-mix(in srgb, var(--accent-green), transparent 85%)',
+          }}>
+            <Users size={18} color="var(--accent-green)" />
+            <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+              Le Club
+            </h2>
+          </div>
+        </div>
+
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '60px 20px', 
+          background: 'rgba(255,255,255,0.02)', 
+          borderRadius: '24px',
+          border: '1px dashed var(--glass-border)',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <div style={{ 
+            width: '80px', 
+            height: '80px', 
+            background: 'rgba(255,255,255,0.03)', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            border: '1px solid var(--glass-border)'
+          }}>
+            <Users size={40} style={{ opacity: 0.3 }} />
+          </div>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '10px' }}>Le Club est un peu calme...</h3>
+          <p style={{ opacity: 0.6, maxWidth: '400px', margin: '0 auto 25px', lineHeight: '1.6' }}>
+            C'est ici que tu pourras voir ce que tes amis écoutent en direct et comparer tes statistiques avec eux !
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const liveFriends = activities.filter(a => a.nowPlaying && !a.isMe);
 
