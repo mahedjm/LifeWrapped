@@ -148,7 +148,9 @@ export default function LoginPage() {
         <LoginForm />
       </Suspense>
       <footer className="footer-credits" style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, border: 'none', background: 'none' }}>
-        <div className="footer-content" style={{ justifyContent: 'center' }}>
+        <div className="footer-content" style={{ justifyContent: 'center', gap: '20px' }}>
+          <a href="/privacy" style={{ fontSize: '0.8rem', opacity: 0.6, color: 'white', textDecoration: 'none' }}>Confidentialité</a>
+          <span style={{ fontSize: '0.8rem', opacity: 0.3 }}>•</span>
           <div className="lastfm-credit">
             <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>Powered by</span>
             <a href="https://www.last.fm" target="_blank" rel="noopener noreferrer" className="lastfm-link">

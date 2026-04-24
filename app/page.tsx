@@ -1358,11 +1358,15 @@ export default function Home() {
             <span className="brand-dot">•</span>
             <span className="brand-desc">Ton univers musical</span>
           </div>
-          <div className="lastfm-credit">
-            <span>Powered by</span>
-            <a href="https://www.last.fm" target="_blank" rel="noopener noreferrer" className="lastfm-link">
-              <img src="https://www.last.fm/static/images/footer_logo@2x.49ca51948b0a.png" alt="Last.fm" className="lastfm-logo" />
-            </a>
+          <div className="footer-links">
+            <a href="/privacy" className="footer-link">Confidentialité</a>
+            <span className="footer-link-dot">•</span>
+            <div className="lastfm-credit">
+              <span>Powered by</span>
+              <a href="https://www.last.fm" target="_blank" rel="noopener noreferrer" className="lastfm-link">
+                <img src="https://www.last.fm/static/images/footer_logo@2x.49ca51948b0a.png" alt="Last.fm" className="lastfm-logo" />
+              </a>
+            </div>
           </div>
         </div>
       </footer>
