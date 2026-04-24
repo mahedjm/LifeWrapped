@@ -931,3 +931,88 @@ h1 {
   }
 }
 
+/* --- Footer Credits --- */
+.footer-credits {
+  margin-top: 80px;
+  padding: 60px 20px 120px 20px;
+  width: 100%;
+}
+
+.footer-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--glass-border), transparent);
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  opacity: 0.7;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.brand-name {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+.brand-dot {
+  opacity: 0.4;
+  font-size: 1.2rem;
+}
+
+.brand-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.lastfm-credit {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.lastfm-logo {
+  height: 22px;
+  filter: grayscale(1) brightness(1.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.8;
+}
+
+.lastfm-link:hover .lastfm-logo {
+  filter: grayscale(0) brightness(1);
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+@media (max-width: 1023px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 35px;
+  }
+  
+  .footer-brand {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .brand-dot {
+    display: none;
+  }
+}
+

@@ -147,6 +147,16 @@ export default function LoginPage() {
       <Suspense fallback={<div>Chargement...</div>}>
         <LoginForm />
       </Suspense>
+      <footer className="footer-credits" style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, border: 'none', background: 'none' }}>
+        <div className="footer-content" style={{ justifyContent: 'center' }}>
+          <div className="lastfm-credit">
+            <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>Powered by</span>
+            <a href="https://www.last.fm" target="_blank" rel="noopener noreferrer" className="lastfm-link">
+              <img src="https://www.last.fm/static/images/footer_logo@2x.49ca51948b0a.png" alt="Last.fm" className="lastfm-logo" style={{ height: '14px', opacity: 0.7 }} />
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

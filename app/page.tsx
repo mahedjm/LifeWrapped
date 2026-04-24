@@ -1350,6 +1350,22 @@ export default function Home() {
           onClose={() => setSelectedFriendId(null)} 
         />
       )}
+      <footer className="footer-credits">
+        <div className="footer-divider" />
+        <div className="footer-content">
+          <div className="footer-brand">
+            <span className="brand-name">Écho</span>
+            <span className="brand-dot">•</span>
+            <span className="brand-desc">Ton univers musical</span>
+          </div>
+          <div className="lastfm-credit">
+            <span>Powered by</span>
+            <a href="https://www.last.fm" target="_blank" rel="noopener noreferrer" className="lastfm-link">
+              <img src="https://www.last.fm/static/images/footer_logo@2x.49ca51948b0a.png" alt="Last.fm" className="lastfm-logo" />
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
