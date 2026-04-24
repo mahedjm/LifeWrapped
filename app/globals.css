@@ -254,22 +254,22 @@ h1 {
   /* Cycle 1: Vert */
   0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #1db954; }
   8%   { opacity: 0.6; }
-  25%  { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #1db954; }
+  25%  { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-color: #1db954; }
   
   /* Cycle 2: Rouge */
   25.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #FC3C44; }
   33%    { opacity: 0.6; }
-  50%    { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #FC3C44; }
+  50%    { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-color: #FC3C44; }
   
   /* Cycle 3: Violet */
   50.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #A238FF; }
   58%    { opacity: 0.6; }
-  75%    { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #A238FF; }
+  75%    { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-color: #A238FF; }
 
   /* Cycle 4: Bleu */
   75.01% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-color: #00D2FF; }
   83%    { opacity: 0.6; }
-  100%   { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-color: #00D2FF; }
+  100%   { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-color: #00D2FF; }
 }
 
 /* --- Notifications --- */
