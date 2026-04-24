@@ -272,6 +272,11 @@ h1 {
   100%   { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-color: #00D2FF; }
 }
 
+@keyframes loadingTextFade {
+  0%, 100% { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  15%, 85% { opacity: 0.7; transform: translateY(0); filter: blur(0); }
+}
+
 /* --- Notifications --- */
 .notif-wrapper {
   position: relative;

@@ -19,6 +19,18 @@ import FloatingActions from '@/components/FloatingActions';
 import ShareCard from '@/components/ShareCard';
 import InfoTooltip from '@/components/InfoTooltip';
 
+const LOADING_PHRASES = [
+  "On demande l'avis de tes voisins sur tes goûts musicaux...",
+  "Nettoyage des scrobbles gênants de 2012...",
+  "On vérifie si tu as vraiment écouté ça ou si c'est une erreur...",
+  "Accordage des ondes sonores...",
+  "Récupération de ton obsession du moment (pas de jugement)...",
+  "Chargement de tes stats (prépare-toi psychologiquement)...",
+  "On essaie de comprendre pourquoi tu écoutes encore ce titre...",
+  "Analyse de tes habitudes (spoiler: c'est brillant)...",
+  "Synchronisation avec ton âme musicale..."
+];
+
 // Libs & Hooks
 import { Stats } from '@/lib/types';
 import { PALETTES, TIME_PERIODS, CHART_PERIODS } from '@/lib/constants';
@@ -43,6 +55,7 @@ export default function Home() {
   const [showAccount, setShowAccount] = useState(false);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [friendsRefreshKey, setFriendsRefreshKey] = useState(0);
+  const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
   
   // Custom Hooks (Logic extraction)
   const { themeColor, setThemeColor } = useTheme();
@@ -139,6 +152,16 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Cycle des phrases de chargement
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingPhraseIndex(prev => (prev + 1) % LOADING_PHRASES.length);
+      }, 3500);
+      return () => clearInterval(interval);
+    }
+  }, [loading]);
+
   const calculateTrend = () => {
     if (!stats || !stats.previousMonthly) return null;
     const diff = ((stats.monthly - stats.previousMonthly) / stats.previousMonthly) * 100;
@@ -203,9 +226,18 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-dark)' }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh', 
+        background: 'var(--bg-dark)',
+        gap: '130px',
+        padding: '20px'
+      }}>
         {themeColor && (
-          <div className="logo-container rainbow" style={{ transform: 'scale(1.5)' }}>
+          <div className="logo-container rainbow" style={{ transform: 'scale(1.6)' }}>
             <div className="logo-wave" />
             <div className="logo-wave" />
             <div className="logo-wave" />
@@ -219,6 +251,17 @@ export default function Home() {
             }}>Écho</h1>
           </div>
         )}
+        <p style={{ 
+          color: 'var(--text-secondary)', 
+          fontSize: '0.95rem', 
+          textAlign: 'center',
+          maxWidth: '300px',
+          lineHeight: '1.5',
+          minHeight: '3em',
+          animation: 'loadingTextFade 3.5s ease-in-out'
+        }} key={loadingPhraseIndex}>
+          {LOADING_PHRASES[loadingPhraseIndex]}
+        </p>
       </div>
     );
   }
