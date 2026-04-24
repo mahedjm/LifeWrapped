@@ -155,6 +155,9 @@ export default function Home() {
   // Cycle des phrases de chargement
   useEffect(() => {
     if (loading) {
+      // On commence par une phrase au hasard
+      setLoadingPhraseIndex(Math.floor(Math.random() * LOADING_PHRASES.length));
+      
       const interval = setInterval(() => {
         setLoadingPhraseIndex(prev => (prev + 1) % LOADING_PHRASES.length);
       }, 3500);
