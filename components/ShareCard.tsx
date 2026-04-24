@@ -7,11 +7,13 @@ import { Stats } from '@/lib/types';
 
 interface ShareCardProps {
   stats: Stats | null;
-  themeColor?: string;
+  themeColor?: string | null;
 }
 
-const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColor = '#1db954' }, ref) => {
+const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColor }, ref) => {
   if (!stats) return null;
+
+  const effectiveColor = themeColor || '#1db954';
 
   const formatTime = (ms: number | undefined) => {
     if (ms === undefined || isNaN(ms)) return "0h 00min";
@@ -40,7 +42,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
         top: 0,
         fontFamily: "'Inter', system-ui, sans-serif",
         borderRadius: '0', // Pour la capture, on veut des bords propres
-        '--accent-green': themeColor
+        '--accent-green': effectiveColor
       } as React.CSSProperties}
     >
       {/* Background Decor */}
@@ -50,7 +52,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
         right: '-10%',
         width: '300px',
         height: '300px',
-        background: `radial-gradient(circle, ${themeColor}33 0%, transparent 70%)`,
+        background: `radial-gradient(circle, ${effectiveColor}33 0%, transparent 70%)`,
         filter: 'blur(40px)',
         zIndex: 0
       }}></div>
@@ -70,15 +72,15 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '40px' }}>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             {/* Ondes fixes pour la capture */}
-            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '60px', height: '60px', borderRadius: '50%', border: `1px solid ${themeColor}`, opacity: 0.15 }} />
-            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '80px', height: '80px', borderRadius: '50%', border: `1px solid ${themeColor}`, opacity: 0.1 }} />
+            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '60px', height: '60px', borderRadius: '50%', border: `1px solid ${effectiveColor}`, opacity: 0.15 }} />
+            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '80px', height: '80px', borderRadius: '50%', border: `1px solid ${effectiveColor}`, opacity: 0.1 }} />
             
             <h1 style={{ 
               fontSize: '1.5rem', 
               margin: 0, 
               fontWeight: 900, 
               letterSpacing: '-1px', 
-              color: themeColor,
+              color: effectiveColor,
               position: 'relative',
               zIndex: 2
             }}>
@@ -88,7 +90,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
         </div>
 
         <div style={{ marginBottom: '30px' }}>
-          <p style={{ color: themeColor, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.7rem', margin: '0 0 5px 0' }}>Récapitulatif</p>
+          <p style={{ color: effectiveColor, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.7rem', margin: '0 0 5px 0' }}>Récapitulatif</p>
           <h2 style={{ fontSize: '2.2rem', margin: 0, fontWeight: 900, lineHeight: 1.1 }}>Ma Semaine en Musique</h2>
         </div>
 
@@ -98,7 +100,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {stats.topArtists.slice(0, 5).map((artist, i) => (
               <div key={artist.artist} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ width: '45px', height: '45px', borderRadius: '50%', overflow: 'hidden', border: `2px solid ${themeColor}33` }}>
+                <div style={{ width: '45px', height: '45px', borderRadius: '50%', overflow: 'hidden', border: `2px solid ${effectiveColor}33` }}>
                   {artist.image_url ? (
                     <img src={artist.image_url} alt={artist.artist} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
@@ -128,7 +130,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ stats, themeColo
           marginBottom: '20px'
         }}>
           <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '12px' }}>
-            <Clock size={20} color={themeColor} />
+            <Clock size={20} color={effectiveColor} />
           </div>
           <div>
             <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>TEMPS TOTAL D'ÉCOUTE</div>
