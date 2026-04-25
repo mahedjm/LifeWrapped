@@ -432,8 +432,15 @@ export default function FriendsList({ onFriendClick, refreshKey }: { onFriendCli
 
       <div style={{ height: '1px', background: 'var(--glass-border)', margin: '40px 0' }} />
 
-      <div className="section-title-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Vos Amis ({friends.length})</h3>
+      <div className="section-title-wrapper" style={{ marginBottom: '25px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Vos Amis ({friends.length})</h3>
+        </div>
+        {friends.length > 0 && (
+          <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            Cliquez sur un ami pour voir son profil et ses statistiques en détail.
+          </p>
+        )}
       </div>
 
       {loading ? (
