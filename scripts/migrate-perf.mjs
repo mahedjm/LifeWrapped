@@ -10,18 +10,36 @@ const pool = new Pool({
 });
 
 async function migrate() {
-  console.log('Running performance migrations...');
+  console.log('Migrating: Adding performance indexes to database...');
   try {
+    // 1. Index on (user_id, played_at_uts DESC)
     await pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_ecoutes_user_id ON ecoutes(user_id);
-      CREATE INDEX IF NOT EXISTS idx_ecoutes_played_at_uts ON ecoutes(played_at_uts);
-      CREATE INDEX IF NOT EXISTS idx_ecoutes_user_time ON ecoutes(user_id, played_at_uts);
+      CREATE INDEX IF NOT EXISTS idx_ecoutes_user_time 
+      ON ecoutes (user_id, played_at_uts DESC);
     `);
-    console.log('Indexes created successfully.');
+    console.log('Index idx_ecoutes_user_time created.');
+
+    // 2. Index on (user_id, artist_name)
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_ecoutes_user_artist 
+      ON ecoutes (user_id, artist_name);
+    `);
+    console.log('Index idx_ecoutes_user_artist created.');
+
+    // 3. Index on (user_id) for friendships just in case
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_friendships_user 
+      ON friendships (user_id);
+      CREATE INDEX IF NOT EXISTS idx_friendships_friend 
+      ON friendships (friend_id);
+    `);
+    console.log('Indexes for friendships created.');
+
+    console.log('All performance indexes applied successfully!');
   } catch (err) {
-    console.error('Migration failed:', err);
+    console.error('Migration error:', err);
   } finally {
-    await pool.end();
+    pool.end();
   }
 }
 

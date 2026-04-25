@@ -56,16 +56,27 @@ export function useStats(
         setLoadingChart(true);
       }
 
-      const res = await fetch(url.toString(), { signal: controller.signal });
-      if (!res.ok) throw new Error(`Erreur serveur: ${res.status}`);
+      const [statsRes, badgesRes] = await Promise.all([
+        fetch(url.toString(), { signal: controller.signal }),
+        fetch('/api/badges', { signal: controller.signal })
+      ]);
+
+      if (!statsRes.ok) throw new Error(`Erreur serveur stats: ${statsRes.status}`);
       
-      const data = await res.json();
+      const data = await statsRes.json();
+      let badgesData = { badges: [] };
+
+      if (badgesRes.ok) {
+        try {
+          badgesData = await badgesRes.json();
+        } catch(e) {}
+      }
       
       if (data.chartData && !data.topArtists) {
         // Partial update: only update chartData
         setStats(prev => prev ? { ...prev, chartData: data.chartData } : data);
       } else {
-        setStats(data);
+        setStats({ ...data, badges: badgesData.badges });
       }
       setError(null);
     } catch (err: any) {

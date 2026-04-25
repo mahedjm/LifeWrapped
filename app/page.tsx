@@ -8,16 +8,16 @@ import {
   Share2, LogOut, User, Palette, Users, Bell, 
   Search, TrendingUp, Award, Grid, Zap, Info, Layers, X
 } from 'lucide-react';
-import DashboardChart from '@/components/DashboardChart';
-import DashboardLineChart from '@/components/DashboardLineChart';
+import HomeTab from '@/components/tabs/HomeTab';
+import ClubTab from '@/components/tabs/ClubTab';
+import FriendsTab from '@/components/tabs/FriendsTab';
+import AchievementsTab from '@/components/tabs/AchievementsTab';
 import NowPlaying from '@/components/NowPlaying';
-import FriendsActivity from '@/components/FriendsActivity';
-import FriendsList from '@/components/FriendsList';
 import FriendProfileModal from '@/components/FriendProfileModal';
 import FloatingActions from '@/components/FloatingActions';
-
 import ShareCard from '@/components/ShareCard';
-import InfoTooltip from '@/components/InfoTooltip';
+
+
 
 const LOADING_PHRASES = [
   "On demande l'avis de tes voisins sur tes goûts musicaux...",
@@ -50,7 +50,7 @@ export default function Home() {
   const [trackLimit, setTrackLimit] = useState<number>(5);
   const [showArtistLimit, setShowArtistLimit] = useState(false);
   const [showTrackLimit, setShowTrackLimit] = useState(false);
-  const [activeTab, setActiveTab] = useState<'accueil' | 'amis' | 'club'>('accueil');
+  const [activeTab, setActiveTab] = useState<'accueil' | 'amis' | 'club' | 'succes'>('accueil');
   const [showPalette, setShowPalette] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
@@ -310,6 +310,9 @@ export default function Home() {
               <button className={activeTab === 'amis' ? 'active' : ''} onClick={() => { setActiveTab('amis'); setShowPalette(false); setShowNotifications(false); }}>
                 <Users size={18} /> Amis
               </button>
+              <button className={activeTab === 'succes' ? 'active' : ''} onClick={() => { setActiveTab('succes'); setShowPalette(false); setShowNotifications(false); }}>
+                <Award size={18} /> Succès
+              </button>
             </nav>
             
             {stats?.username && (
@@ -377,13 +380,47 @@ export default function Home() {
 
         {/* --- MOBILE HEADER (New centered) --- */}
         <div className="mobile-only">
-          <div className="header-top" style={{ marginBottom: '40px', justifyContent: 'center' }}>
+          <div className="header-top" style={{ marginBottom: '40px', justifyContent: 'center', position: 'relative', width: '100%' }}>
             <div className="logo-container" style={{ margin: 0 }}>
               <div className="logo-wave" />
               <div className="logo-wave" />
               <div className="logo-wave" />
               <h1 style={{ margin: 0, fontWeight: 900, letterSpacing: '-0.5px', color: 'var(--accent-green)', position: 'relative', zIndex: 2 }}>Écho</h1>
             </div>
+
+            {/* Notifications sur mobile (déplacées en haut à droite) */}
+            {stats?.username && (
+              <div style={{ position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)', zIndex: 100 }}>
+                <button 
+                  className="notif-btn" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleNotifications();
+                    setShowAccount(false);
+                    setShowPalette(false);
+                  }}
+                  style={{ 
+                    background: 'rgba(255, 255, 255, 0.05)', 
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid var(--glass-border)', 
+                    color: 'white', 
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '16px',
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    position: 'relative',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  <Bell size={28} />
+                  {notifications.some(n => n.status === 'unread') && <div className="notif-badge" style={{ top: '-4px', right: '-4px', width: '10px', height: '10px' }} />}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -400,685 +437,22 @@ export default function Home() {
       <NowPlaying track={nowPlaying} />
 
       {activeTab === 'amis' ? (
-        <FriendsList onFriendClick={(id) => setSelectedFriendId(id)} refreshKey={friendsRefreshKey} />
+        <FriendsTab setSelectedFriendId={setSelectedFriendId} friendsRefreshKey={friendsRefreshKey} />
       ) : activeTab === 'club' ? (
-        <div>
-          <div className="section-badge-container" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-              padding: '8px 24px',
-              borderRadius: '50px',
-              border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-            }}>
-              <Zap size={18} color="var(--accent-green)" />
-              <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Le Club
-              </h2>
-            </div>
-          </div>
-          <FriendsActivity onFriendClick={(id) => setSelectedFriendId(id)} />
-        </div>
+        <ClubTab setSelectedFriendId={setSelectedFriendId} />
+      ) : activeTab === 'succes' ? (
+        <AchievementsTab badges={stats?.badges} />
       ) : (
-        <>
-          {/* KPI Cards (Aujourd'hui, Semaine, Record) */}
-          <div className="kpi-grid">
-            <div className="card animated" style={{ animationDelay: '0.1s' }}>
-              <div className="card-title">Aujourd'hui</div>
-              <div className="card-value">{formatTime(stats?.today || 0)}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                {stats?.yesterday !== undefined && stats.yesterday > 0 && (() => {
-                  const diffMs = (stats.today || 0) - stats.yesterday;
-                  const isPos = diffMs >= 0;
-                  return (
-                    <span style={{ 
-                      fontSize: '0.85rem', 
-                      fontWeight: 700, 
-                      color: isPos ? '#1ed760' : '#ff4444',
-                      background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
-                      padding: '2px 8px',
-                      borderRadius: '12px'
-                    }}>
-                      {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
-                    </span>
-                  );
-                })()}
-                <span className="card-sub">vs hier</span>
-              </div>
-            </div>
-
-            <div className="card animated" style={{ animationDelay: '0.2s' }}>
-              <div className="card-title">Cette Semaine</div>
-              <div className="card-value">{formatTime(weeklyTotalMs)}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                {stats?.prevWeekTotal !== undefined && stats.prevWeekTotal > 0 && (() => {
-                  const diffMs = weeklyTotalMs - stats.prevWeekTotal;
-                  const isPos = diffMs >= 0;
-                  return (
-                    <span style={{ 
-                      fontSize: '0.85rem', 
-                      fontWeight: 700, 
-                      color: isPos ? '#1ed760' : '#ff4444',
-                      background: isPos ? 'rgba(30, 215, 96, 0.1)' : 'rgba(255, 68, 68, 0.1)',
-                      padding: '2px 8px',
-                      borderRadius: '12px'
-                    }}>
-                      {isPos ? '+' : '-'} {formatDiffTime(Math.abs(diffMs))}
-                    </span>
-                  );
-                })()}
-                <span className="card-sub">vs semaine dernière</span>
-              </div>
-            </div>
-
-            <div className="card animated" style={{ animationDelay: '0.3s' }}>
-              <div className="card-title">Top Intensité</div>
-              <div className="card-value">
-                {stats?.weekly?.length ? formatTime(Math.max(...stats.weekly.map(d => d.ms))) : '0 min'}
-              </div>
-              <div className="card-sub">Record quotidien des 7 derniers jours</div>
-            </div>
-          </div>
-
-          {/* Section Obsession */}
-          {stats?.obsession && (
-            <div className="card animated obsession-card" style={{ 
-              animationDelay: '0.35s', 
-              marginBottom: '30px', 
-              background: `linear-gradient(135deg, color-mix(in srgb, var(--accent-green), transparent 90%) 0%, rgba(0,0,0,0) 100%)`, 
-              border: '1px solid color-mix(in srgb, var(--accent-green), transparent 70%)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '20px', 
-              padding: '24px' 
-            }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{ width: '100px', height: '100px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 8px 20px rgba(0,0,0,0.4)', position: 'relative' }}>
-                  <img src={stats.obsession.image_url} alt={stats.obsession.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 800 }}>🔥 CHAUD</div>
-                </div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: 'var(--accent-green)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  Obsession du moment
-                  <InfoTooltip text="Le morceau que vous avez le plus écouté au cours des dernières 48 heures." />
-                </div>
-                <h3 style={{ fontSize: '1.5rem', margin: '0 0 5px 0', fontWeight: 800 }}>{stats.obsession.title}</h3>
-                <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', margin: 0 }}>{stats.obsession.artist}</p>
-                <div style={{ marginTop: '12px', display: 'inline-block', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '16px', fontSize: '0.85rem' }}>
-                  <span style={{ fontWeight: 800, color: 'var(--accent-green)' }}>{stats.obsession.play_count} {stats.obsession.play_count > 1 ? 'écoutes' : 'écoute'}</span> sur les dernières 48h
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Dashboard Stats */}
-          {stats && (
-            <div className="dashboard-grid animated">
-              <div className="main-column">
-                <div className="stats-header" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div className="section-badge-container">
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-                      padding: '8px 24px',
-                      borderRadius: '50px',
-                      border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-                      boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-                    }}>
-                      <Activity size={18} color="var(--accent-green)" />
-                      <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Résumé d'écoute
-                        <InfoTooltip text="Statistiques globales basées sur l'intégralité de votre historique local." />
-                      </h2>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="chart-container animated" style={{ animationDelay: '0.4s', position: 'relative' }}>
-        {loadingChart && (
-          <div style={{ 
-            position: 'absolute', 
-            inset: 0, 
-            background: 'rgba(10,10,10,0.4)', 
-            backdropFilter: 'blur(4px)', 
-            zIndex: 10, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            borderRadius: '20px'
-          }}>
-            <RefreshCw className="animate-spin" style={{ color: 'var(--accent-green)' }} />
-          </div>
-        )}
-        <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <BarChart3 color="var(--accent-green)" />
-            <h3 style={{ fontSize: '1.2rem', margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-              Activité {chartPeriod === 'week' ? 'Hebdomadaire' : chartPeriod === 'month' ? 'Mensuelle' : 'Annuelle'}
-              <InfoTooltip text="Volume total d'écoute (en heures) cumulé sur la période sélectionnée." />
-            </h3>
-          </div>
-          <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1, width: '100%' }}>
-            <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end', width: '100%' }}>
-              <div style={{ 
-                display: 'flex', 
-                gap: '6px', 
-                background: 'rgba(255,255,255,0.05)', 
-                padding: '6px', 
-                borderRadius: '24px', 
-                border: '1px solid var(--glass-border)', 
-                width: '100%',
-                justifyContent: 'space-between'
-              }}>
-                {[ { id: 'week', label: 'Semaine' }, { id: 'month', label: 'Mois' }, { id: 'year', label: 'Année' } ].map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => setChartPeriod(p.id as any)}
-                    style={{
-                      flex: 1,
-                      padding: '6px 16px',
-                      borderRadius: '20px',
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: chartPeriod === p.id ? `color-mix(in srgb, ${themeColor || '#1DB954'}, transparent 90%)` : 'transparent',
-                      color: chartPeriod === p.id ? 'var(--accent-green)' : 'var(--text-secondary)',
-                      transition: 'all 0.2s ease',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {hasData && stats?.chartData ? (
-            <DashboardChart data={stats.chartData} color={themeColor || '#1DB954'} />
-          ) : (
-            <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-              <Music size={40} style={{ marginBottom: '10px', opacity: 0.3 }} />
-              <p>Écoutez des morceaux pour générer le graphique.</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="section-badge-container" style={{ 
-        marginBottom: '25px', 
-        color: 'var(--text-primary)', 
-        marginTop: '50px' 
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-          padding: '8px 24px',
-          borderRadius: '50px',
-          border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-        }}>
-          <Calendar size={18} color="var(--accent-green)" />
-          <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Habitudes d'Écoute
-          </h2>
-        </div>
-      </div>
-
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', 
-        gap: '24px', 
-        marginBottom: '40px' 
-      }}>
-        {/* Graphique des Heures */}
-        <div className="chart-container animated" style={{ margin: 0, animationDelay: '0.5s' }}>
-          <div className="chart-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Clock size={18} color="var(--accent-green)" />
-              <h3 style={{ fontSize: '1.1rem', margin: 0 }}>
-                Heures de Pointe
-                <InfoTooltip text="Moyenne hebdomadaire de votre temps d'écoute par heure. Montre votre routine type." />
-              </h3>
-            </div>
-          </div>
-          <div style={{ height: '220px' }}>
-            {stats?.hourlyActivity ? (
-              <DashboardLineChart data={stats.hourlyActivity} color={themeColor || '#1DB954'} />
-            ) : (
-              <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-                Chargement...
-              </div>
-            )}
-          </div>
-          <div style={{ marginTop: '15px', fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-            {stats?.hourlyActivity && (
-              <>
-                Votre pic d'écoute se situe vers{' '}
-                <strong style={{ color: 'var(--accent-green)' }}>
-                  {[...stats.hourlyActivity].sort((a,b) => b.ms - a.ms)[0].label}
-                </strong>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Graphique des Jours */}
-        <div className="chart-container animated" style={{ margin: 0, animationDelay: '0.6s' }}>
-          <div className="chart-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <BarChart3 size={18} color="var(--accent-green)" />
-              <h3 style={{ fontSize: '1.1rem', margin: 0 }}>
-                Jours préférés
-                <InfoTooltip text="Répartition moyenne de votre temps d'écoute sur les 7 jours de la semaine." />
-              </h3>
-            </div>
-          </div>
-          <div style={{ height: '220px' }}>
-            {stats?.dailyActivity ? (
-              <DashboardChart data={stats.dailyActivity} color={themeColor || '#1DB954'} />
-            ) : (
-              <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-                Chargement...
-              </div>
-            )}
-          </div>
-          <div style={{ marginTop: '15px', fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-            {stats?.dailyActivity && (
-              <>
-                Le <strong style={{ color: 'var(--accent-green)' }}>
-                  {(() => {
-                    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-                    const dayNamesShort = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-                    const bestDayShort = [...stats.dailyActivity].sort((a,b) => b.ms - a.ms)[0].label;
-                    const index = dayNamesShort.indexOf(bestDayShort);
-                    return days[index];
-                  })()}
-                </strong> est votre jour de prédilection.
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-
-
-      {stats?.topArtists && stats.topArtists.length > 0 && (
-        <div className="chart-container animated" style={{ animationDelay: '0.5s' }}>
-          <div className="chart-header">
-            {/* Rangée 1 : Badge Titre Centré (sur mobile) */}
-            <div className="section-badge-container" style={{ position: 'relative' }}>
-              <button 
-                onClick={() => setShowArtistLimit(!showArtistLimit)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-                  padding: '6px 20px',
-                  borderRadius: '50px',
-                  border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-                  cursor: 'pointer',
-                  color: 'inherit',
-                  fontFamily: 'inherit',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = 'color-mix(in srgb, var(--accent-green), transparent 80%)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'color-mix(in srgb, var(--accent-green), transparent 90%)'}
-              >
-                <Music size={16} color="var(--accent-green)" />
-                <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  Top {artistLimit} Artistes
-                  <ChevronDown size={14} style={{ transform: showArtistLimit ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                  <InfoTooltip text="Vos artistes les plus écoutés sur la période sélectionnée." />
-                </h3>
-              </button>
-
-              {showArtistLimit && (
-                <div className="custom-select-menu" style={{ top: '110%', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
-                  {[5, 10, 25, 50].map(l => (
-                    <div 
-                      key={l}
-                      className={`custom-select-item ${artistLimit === l ? 'active' : ''}`}
-                      onClick={() => { setArtistLimit(l); setShowArtistLimit(false); }}
-                    >
-                      Top {l}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <div className="incomplete-badge-wrapper desktop-only-inline" style={{ marginLeft: '12px', display: 'inline-flex' }}>
-                {(period === 'month' || period === 'year') && stats?.firstEntryDate && (
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#ffb91d', 
-                    background: 'rgba(255, 185, 29, 0.1)', 
-                    padding: '2px 10px', 
-                    borderRadius: '12px',
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap'
-                  }}>
-                    (Période incomplète)
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
-              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '6px', 
-                  background: 'rgba(255,255,255,0.05)', 
-                  padding: '6px', 
-                  borderRadius: '24px',
-                  border: '1px solid var(--glass-border)',
-                  minWidth: '200px',
-                  justifyContent: 'space-between'
-                }}>
-                  {['week', 'month', 'year'].map(p => (
-                    <button
-                      key={p}
-                      onClick={() => setPeriod(p as any)}
-                      style={{
-                        flex: 1,
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        border: 'none',
-                        cursor: 'pointer',
-                        background: period === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent',
-                        color: period === p ? 'var(--accent-green)' : 'var(--text-secondary)',
-                        transition: 'all 0.2s ease',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Année'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div 
-            className="scrollable-list" 
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '20px', 
-              maxHeight: stats.topArtists.length > 5 ? '400px' : 'none', 
-              overflowY: stats.topArtists.length > 5 ? 'auto' : 'visible', 
-              paddingRight: stats.topArtists.length > 5 ? '12px' : '0',
-              opacity: syncing ? 0.6 : 1,
-              transition: 'opacity 0.3s ease'
-            }}
-          >
-            {stats.topArtists.slice(0, artistLimit).map((a, index) => {
-              const maxMs = stats.topArtists[0].total_ms;
-              const percentage = (a.total_ms / maxMs) * 100;
-              return (
-                <div key={a.artist} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ 
-                      width: '50px', 
-                      height: '50px', 
-                      borderRadius: '50%', 
-                      overflow: 'hidden', 
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '2px solid var(--glass-border)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      {a.image_url ? (
-                        <img src={a.image_url} alt={a.artist} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <Music size={20} color="var(--text-secondary)" />
-                      )}
-                    </div>
-                    <div style={{ 
-                      position: 'absolute', 
-                      bottom: '-5px', 
-                      right: '-5px', 
-                      background: 'var(--accent-green)', 
-                      color: '#000', 
-                      width: '20px', 
-                      height: '20px', 
-                      borderRadius: '50%', 
-                      fontSize: '0.7rem', 
-                      fontWeight: 'bold',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '2px solid var(--bg-dark)'
-                    }}>
-                      {index + 1}
-                    </div>
-                  </div>
-                  
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.95rem', gap: '15px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{a.artist}</span>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                        {formatTime(a.total_ms)}
-                      </span>
-                    </div>
-                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ 
-                        height: '100%', 
-                        width: `${percentage}%`, 
-                        background: 'var(--accent-green)', 
-                        borderRadius: '3px',
-                        transition: 'width 1s ease-out'
-                      }}></div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {stats?.topTracks && stats.topTracks.length > 0 && (
-        <div className="chart-container animated" style={{ animationDelay: '0.6s' }}>
-          <div className="chart-header">
-            {/* Rangée 1 : Badge Titre Centré (sur mobile) */}
-            <div className="section-badge-container" style={{ position: 'relative' }}>
-              <button 
-                onClick={() => setShowTrackLimit(!showTrackLimit)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-                  padding: '6px 20px',
-                  borderRadius: '50px',
-                  border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-                  cursor: 'pointer',
-                  color: 'inherit',
-                  fontFamily: 'inherit',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = 'color-mix(in srgb, var(--accent-green), transparent 80%)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'color-mix(in srgb, var(--accent-green), transparent 90%)'}
-              >
-                <Clock size={16} color="var(--accent-green)" />
-                <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  Top {trackLimit} Titres
-                  <ChevronDown size={14} style={{ transform: showTrackLimit ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                  <InfoTooltip text="Vos morceaux les plus écoutés sur la période sélectionnée." />
-                </h3>
-              </button>
-
-              {showTrackLimit && (
-                <div className="custom-select-menu" style={{ top: '110%', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
-                  {[5, 10, 25, 50].map(l => (
-                    <div 
-                      key={l}
-                      className={`custom-select-item ${trackLimit === l ? 'active' : ''}`}
-                      onClick={() => { setTrackLimit(l); setShowTrackLimit(false); }}
-                    >
-                      Top {l}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="incomplete-badge-wrapper desktop-only-inline" style={{ marginLeft: '12px', display: 'inline-flex' }}>
-                {(trackPeriod === 'month' || trackPeriod === 'year') && stats?.firstEntryDate && (
-                  <span style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#ffb91d', 
-                    background: 'rgba(255, 185, 29, 0.1)', 
-                    padding: '2px 10px', 
-                    borderRadius: '12px',
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap'
-                  }}>
-                    (Période incomplète)
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
-              <div className="filter-bar-wrapper-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '6px', 
-                  background: 'rgba(255,255,255,0.05)', 
-                  padding: '6px', 
-                  borderRadius: '24px',
-                  border: '1px solid var(--glass-border)',
-                  minWidth: '200px',
-                  justifyContent: 'space-between'
-                }}>
-                  {['week', 'month', 'year'].map(p => (
-                    <button
-                      key={p}
-                      onClick={() => setTrackPeriod(p as any)}
-                      style={{
-                        flex: 1,
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        border: 'none',
-                        cursor: 'pointer',
-                        background: trackPeriod === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent',
-                        color: trackPeriod === p ? 'var(--accent-green)' : 'var(--text-secondary)',
-                        transition: 'all 0.2s ease',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Année'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div 
-            className="scrollable-list" 
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '20px', 
-              maxHeight: stats.topTracks.length > 5 ? '400px' : 'none', 
-              overflowY: stats.topTracks.length > 5 ? 'auto' : 'visible', 
-              paddingRight: stats.topTracks.length > 5 ? '12px' : '0',
-              opacity: syncing ? 0.6 : 1,
-              transition: 'opacity 0.3s ease'
-            }}
-          >
-            {stats.topTracks.slice(0, trackLimit).map((t, index) => {
-              const maxCount = stats.topTracks[0].play_count;
-              const percentage = (t.play_count / maxCount) * 100;
-              return (
-                <div key={`${t.title}-${t.artist}`} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ 
-                      width: '50px', 
-                      height: '50px', 
-                      borderRadius: '8px', // Carré arrondi pour les morceaux
-                      overflow: 'hidden', 
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '2px solid var(--glass-border)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      {t.image_url ? (
-                        <img src={t.image_url} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <Music size={20} color="var(--text-secondary)" />
-                      )}
-                    </div>
-                    <div style={{ 
-                      position: 'absolute', 
-                      bottom: '-5px', 
-                      right: '-5px', 
-                      background: 'var(--accent-green)', 
-                      color: '#000', 
-                      width: '20px', 
-                      height: '20px', 
-                      borderRadius: '50%', 
-                      fontSize: '0.7rem', 
-                      fontWeight: 'bold',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '2px solid var(--bg-dark)'
-                    }}>
-                      {index + 1}
-                    </div>
-                  </div>
-                  
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontSize: '0.95rem', gap: '15px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.artist}</span>
-                      </div>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                        {t.play_count} {t.play_count > 1 ? 'écoutes' : 'écoute'}
-                      </span>
-                    </div>
-                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ 
-                        height: '100%', 
-                        width: `${percentage}%`, 
-                        background: 'var(--accent-green)', 
-                        borderRadius: '3px',
-                        transition: 'width 1s ease-out'
-                      }}></div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-
-        </div>
-      </div>
-    )}
-      </>
+        <HomeTab 
+          stats={stats} period={period} setPeriod={setPeriod}
+          trackPeriod={trackPeriod} setTrackPeriod={setTrackPeriod}
+          chartPeriod={chartPeriod} setChartPeriod={setChartPeriod}
+          artistLimit={artistLimit} setArtistLimit={setArtistLimit}
+          trackLimit={trackLimit} setTrackLimit={setTrackLimit}
+          showArtistLimit={showArtistLimit} setShowArtistLimit={setShowArtistLimit}
+          showTrackLimit={showTrackLimit} setShowTrackLimit={setShowTrackLimit}
+          themeColor={themeColor || '#1DB954'} loadingChart={loadingChart} syncing={syncing}
+        />
       )}
 
       {/* Boutons Flottants (Mobile) - Centralisés dans un composant pour plus de clarté */}
@@ -1150,13 +524,20 @@ export default function Home() {
           <span>Club</span>
         </div>
 
-        <button className={`nav-item ${showNotifications ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleNotifications(); setShowPalette(false); setShowAccount(false); }}>
-          <div style={{ position: 'relative' }}>
-            <Bell size={24} color={showNotifications ? 'var(--accent-green)' : 'var(--text-secondary)'} />
-            {notifications.some(n => n.status === 'unread') && <div className="notif-badge" style={{ top: '-2px', right: '-2px', width: '8px', height: '8px', background: 'red', borderRadius: '50%', position: 'absolute' }} />}
+        <div 
+          className={`nav-item ${activeTab === 'succes' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('succes');
+            setShowPalette(false);
+            setShowAccount(false);
+            setShowNotifications(false);
+          }}
+        >
+          <div className="icon-wrapper">
+            <Award size={24} color={activeTab === 'succes' ? 'var(--accent-green)' : 'var(--text-secondary)'} />
           </div>
-          <span>Notifications</span>
-        </button>
+          <span>Succès</span>
+        </div>
 
         <div 
           className={`nav-item ${showAccount ? 'active' : ''}`}

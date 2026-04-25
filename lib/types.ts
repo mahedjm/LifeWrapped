@@ -1,3 +1,17 @@
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  isUnlocked: boolean;
+  level: number;
+  levelName: string | null;
+  currentVal: number;
+  nextThreshold: number;
+  progress: number;
+  isMaxLevel: boolean;
+}
+
 export interface Stats {
   username?: string;
   today: number;
@@ -15,6 +29,7 @@ export interface Stats {
   obsession?: { title: string; artist: string; image_url: string; play_count: number } | null;
   firstEntryDate: string | null;
   isAuthenticated: boolean;
+  badges?: Badge[];
 }
 
 export interface Notification {

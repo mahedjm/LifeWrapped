@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import "./globals.css";
 
-import Script from "next/script";
+
 
 const sora = Sora({
   variable: "--font-sora",
@@ -21,10 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={sora.variable} suppressHydrationWarning>
-      <body style={{ fontFamily: 'var(--font-sora), sans-serif' }}>
-        <Script
+      <head>
+        <script
           id="theme-init"
-          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -38,6 +37,8 @@ export default function RootLayout({
             `,
           }}
         />
+      </head>
+      <body style={{ fontFamily: 'var(--font-sora), sans-serif' }}>
         {children}
       </body>
     </html>

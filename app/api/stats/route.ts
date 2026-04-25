@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     const trackPeriod = searchParams.get('trackPeriod') || 'month';
     const chartPeriod = searchParams.get('chartPeriod') || 'week';
     
-    const artistLimit = 100; // Force 100 for client-side optimization
-    const trackLimit = 100;  // Force 100 for client-side optimization
+    const artistLimit = 100;
+    const trackLimit = 100;
     const partial = searchParams.get('partial');
 
     if (sync) {
@@ -32,28 +32,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // On récupère la date du jour (YYYY-MM-DD) depuis l'horloge locale du serveur (UTC)
-    // Idéalement, en PostgreSQL: to_char(NOW() AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD')
-    
-    // 1a. Today's listening time (Optimized with Index)
-    const todayRes = await db.query(`
-      SELECT SUM(duration_ms) as total_ms 
-      FROM ecoutes 
-      WHERE user_id = $1
-      AND played_at_uts >= extract(epoch from CURRENT_DATE at time zone 'Europe/Paris')
-    `, [userId]);
-
-    // 1b. Yesterday's listening time (Optimized with Index)
-    const yesterdayRes = await db.query(`
-      SELECT SUM(duration_ms) as total_ms 
-      FROM ecoutes 
-      WHERE user_id = $1
-      AND played_at_uts >= extract(epoch from (CURRENT_DATE - INTERVAL '1 day') at time zone 'Europe/Paris')
-      AND played_at_uts < extract(epoch from CURRENT_DATE at time zone 'Europe/Paris')
-    `, [userId]);
-
-    // 2. Weekly Activity Calculation Dates
+    // Calcul des dates synchrones
     const nowObj = new Date();
+    
+    // Semaine
     const dayOfWeek = nowObj.getDay();
     const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     const monday = new Date(nowObj);
@@ -63,108 +45,12 @@ export async function GET(request: NextRequest) {
     const endOfWeekUTS = mondayUTS + (7 * 24 * 60 * 60);
     const prevMondayUTS = mondayUTS - (7 * 24 * 60 * 60);
 
-    // Prev Week Total (Optimized)
-    const prevWeekRes = await db.query(`
-      SELECT SUM(duration_ms) as total_ms 
-      FROM ecoutes 
-      WHERE user_id = $3 AND played_at_uts >= $1 AND played_at_uts < $2
-    `, [prevMondayUTS, mondayUTS, userId]);
-    const prevWeekTotal = prevWeekRes.rows[0]?.total_ms || 0;
-
-    // 3. Chart Data Optimization (Single Query instead of loops)
-    const labels = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
-    const monthLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-
-    // WEEKLY DATA (Always needed for the small activity chart)
-    const weekRes = await db.query(`
-      SELECT 
-        EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as dow,
-        SUM(duration_ms) as ms
-      FROM ecoutes
-      WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-      GROUP BY dow
-    `, [userId, mondayUTS, endOfWeekUTS]);
-    
-    const dowMap = Object.fromEntries(weekRes.rows.map(r => [Math.floor(r.dow), Number(r.ms)]));
-    const weekData = labels.map((l, i) => ({ label: l, ms: dowMap[i + 1] || 0 }));
-
-    let chartData = [];
-    if (chartPeriod === 'year') {
-      const yearStartUTS = Math.floor(new Date(nowObj.getUTCFullYear(), 0, 1).getTime() / 1000);
-      const yearEndUTS = Math.floor(new Date(nowObj.getUTCFullYear() + 1, 0, 1).getTime() / 1000);
-      
-      const yearRes = await db.query(`
-        SELECT 
-          EXTRACT(MONTH FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as month_num,
-          SUM(duration_ms) as ms
-        FROM ecoutes
-        WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-        GROUP BY month_num
-      `, [userId, yearStartUTS, yearEndUTS]);
-      
-      const monthMap = Object.fromEntries(yearRes.rows.map(r => [Math.floor(r.month_num), Number(r.ms)]));
-      chartData = monthLabels.map((l, i) => ({ label: l, ms: monthMap[i + 1] || 0 }));
-
-    } else if (chartPeriod === 'month') {
-      const monthStart = new Date(nowObj.getFullYear(), nowObj.getMonth(), 1);
-      const monthStartUTS = Math.floor(monthStart.getTime() / 1000);
-      const nextMonthStartUTS = Math.floor(new Date(nowObj.getFullYear(), nowObj.getMonth() + 1, 1).getTime() / 1000);
-      
-      const monthSelectRes = await db.query(`
-        SELECT 
-          FLOOR((EXTRACT(DAY FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') - 1) / 7) as week_idx,
-          SUM(duration_ms) as ms
-        FROM ecoutes
-        WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-        GROUP BY week_idx
-      `, [userId, monthStartUTS, nextMonthStartUTS]);
-      
-      const weekMap = Object.fromEntries(monthSelectRes.rows.map(r => [Math.floor(r.week_idx), Number(r.ms)]));
-      chartData = [
-        { label: 'S1', ms: weekMap[0] || 0 },
-        { label: 'S2', ms: weekMap[1] || 0 },
-        { label: 'S3', ms: weekMap[2] || 0 },
-        { label: 'S4', ms: weekMap[3] || weekMap[4] || 0 }
-      ];
-
-    } else {
-      chartData = weekData;
-    }
-
-    if (partial === 'chart') {
-      return NextResponse.json({ chartData });
-    }
-
-    // 4. Monthly totals (Optimized)
+    // Mois
     const curMonthStartUTS = Math.floor(new Date(nowObj.getFullYear(), nowObj.getMonth(), 1).getTime() / 1000);
     const curMonthEndUTS = Math.floor(new Date(nowObj.getFullYear(), nowObj.getMonth() + 1, 1).getTime() / 1000);
     const prevMonthStartUTS = Math.floor(new Date(nowObj.getFullYear(), nowObj.getMonth() - 1, 1).getTime() / 1000);
-    
-    const monthRes = await db.query(`
-      SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-    `, [userId, curMonthStartUTS, curMonthEndUTS]);
 
-    const prevMonthRes = await db.query(`
-      SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-    `, [userId, prevMonthStartUTS, curMonthStartUTS]);
-
-    // 5. New Artists (Discovered this month)
-    const startOfMonth = new Date(nowObj.getFullYear(), nowObj.getMonth(), 1);
-    const startOfMonthUTS = Math.floor(startOfMonth.getTime() / 1000);
-    const newArtistsRes = await db.query(`
-      SELECT 
-        artist_name as artist, 
-        (SELECT image_url FROM artistes WHERE name = artist_name) as image_url,
-        MIN(played_at_uts) as discovered_at
-      FROM ecoutes
-      WHERE user_id = $1
-      GROUP BY artist_name
-      HAVING MIN(played_at_uts) >= $2
-      ORDER BY discovered_at DESC
-      LIMIT 10
-    `, [userId, startOfMonthUTS]);
-
-    // 6. Top Artists & Tracks params (Optimized)
+    // Ranges for Top Artists / Tracks
     const getUtsRange = (period: string) => {
       if (period === 'week') return { start: mondayUTS, end: endOfWeekUTS };
       if (period === 'year') return { 
@@ -173,87 +59,91 @@ export async function GET(request: NextRequest) {
       };
       return { start: curMonthStartUTS, end: curMonthEndUTS };
     };
-
     const artistRange = getUtsRange(artistPeriod);
-    const topArtistsRes = await db.query(`
-      SELECT 
-        artist_name as artist, 
-        SUM(duration_ms) as total_ms,
-        (SELECT image_url FROM artistes a WHERE a.name = artist_name) as image_url,
-        MAX(played_at_uts) as last_played
-      FROM ecoutes
-      WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-      GROUP BY artist_name
-      ORDER BY total_ms DESC, last_played DESC, artist_name ASC
-      LIMIT $4
-    `, [userId, artistRange.start, artistRange.end, artistLimit]);
-
     const trackRange = getUtsRange(trackPeriod);
-    const topTracksRes = await db.query(`
-      SELECT 
-        track_name as title, 
-        artist_name as artist, 
-        image_url,
-        COUNT(*) as play_count,
-        MAX(played_at_uts) as last_played
-      FROM ecoutes
-      WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3
-      GROUP BY track_name, artist_name, image_url
-      ORDER BY play_count DESC, last_played DESC, track_name ASC
-      LIMIT $4
-    `, [userId, trackRange.start, trackRange.end, trackLimit]);
 
-    // 7. Average trends base data (Optimized)
-    const firstEntryRes = await db.query('SELECT MIN(played_at_uts) as first_uts FROM ecoutes WHERE user_id = $1', [userId]);
+    // Chart Data Params
+    let chartPromise;
+    if (chartPeriod === 'year') {
+      const yearStartUTS = Math.floor(new Date(nowObj.getUTCFullYear(), 0, 1).getTime() / 1000);
+      const yearEndUTS = Math.floor(new Date(nowObj.getUTCFullYear() + 1, 0, 1).getTime() / 1000);
+      chartPromise = db.query(`
+        SELECT EXTRACT(MONTH FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as month_num, SUM(duration_ms) as ms
+        FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3 GROUP BY month_num
+      `, [userId, yearStartUTS, yearEndUTS]);
+    } else if (chartPeriod === 'month') {
+      chartPromise = db.query(`
+        SELECT FLOOR((EXTRACT(DAY FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') - 1) / 7) as week_idx, SUM(duration_ms) as ms
+        FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3 GROUP BY week_idx
+      `, [userId, curMonthStartUTS, curMonthEndUTS]);
+    } else {
+      chartPromise = Promise.resolve(null); // Managed by weekRes
+    }
+
+    // === PARALLEL EXECUTION OF ALL QUERIES ===
+    const [
+      todayRes, yesterdayRes, prevWeekRes, weekRes, monthRes, prevMonthRes, 
+      newArtistsRes, topArtistsRes, topTracksRes, firstEntryRes, hourlyRes, dailyRes, obsessionRes, chartRes
+    ] = await Promise.all([
+      db.query("SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= extract(epoch from CURRENT_DATE at time zone 'Europe/Paris')", [userId]),
+      db.query("SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= extract(epoch from (CURRENT_DATE - INTERVAL '1 day') at time zone 'Europe/Paris') AND played_at_uts < extract(epoch from CURRENT_DATE at time zone 'Europe/Paris')", [userId]),
+      db.query("SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $3 AND played_at_uts >= $1 AND played_at_uts < $2", [prevMondayUTS, mondayUTS, userId]),
+      db.query("SELECT EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as dow, SUM(duration_ms) as ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3 GROUP BY dow", [userId, mondayUTS, endOfWeekUTS]),
+      db.query("SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3", [userId, curMonthStartUTS, curMonthEndUTS]),
+      db.query("SELECT SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3", [userId, prevMonthStartUTS, curMonthStartUTS]),
+      db.query("SELECT artist_name as artist, (SELECT image_url FROM artistes WHERE name = artist_name) as image_url, MIN(played_at_uts) as discovered_at FROM ecoutes WHERE user_id = $1 GROUP BY artist_name HAVING MIN(played_at_uts) >= $2 ORDER BY discovered_at DESC LIMIT 10", [userId, curMonthStartUTS]),
+      db.query("SELECT artist_name as artist, SUM(duration_ms) as total_ms, (SELECT image_url FROM artistes a WHERE a.name = artist_name) as image_url, MAX(played_at_uts) as last_played FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3 GROUP BY artist_name ORDER BY total_ms DESC, last_played DESC, artist_name ASC LIMIT $4", [userId, artistRange.start, artistRange.end, artistLimit]),
+      db.query("SELECT track_name as title, artist_name as artist, image_url, COUNT(*) as play_count, MAX(played_at_uts) as last_played FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3 GROUP BY track_name, artist_name, image_url ORDER BY play_count DESC, last_played DESC, track_name ASC LIMIT $4", [userId, trackRange.start, trackRange.end, trackLimit]),
+      db.query("SELECT MIN(played_at_uts) as first_uts FROM ecoutes WHERE user_id = $1", [userId]),
+      db.query("SELECT EXTRACT(HOUR FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as hour, SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 GROUP BY hour", [userId]),
+      db.query("SELECT EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as dow, SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 GROUP BY dow", [userId]),
+      db.query("SELECT track_name as title, artist_name as artist, image_url, COUNT(*) as play_count FROM ecoutes WHERE to_timestamp(played_at_uts) >= NOW() - INTERVAL '2 days' AND user_id = $1 GROUP BY track_name, artist_name, image_url ORDER BY play_count DESC, MAX(played_at_uts) DESC LIMIT 1", [userId]),
+      chartPromise
+    ]);
+
+    // Format Week Data
+    const labels = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
+    const dowMap = Object.fromEntries(weekRes.rows.map(r => [Math.floor(r.dow), Number(r.ms)]));
+    const weekData = labels.map((l, i) => ({ label: l, ms: dowMap[i + 1] || 0 }));
+
+    // Format Chart Data
+    let chartData = [];
+    if (chartPeriod === 'year' && chartRes) {
+      const monthLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      const monthMap = Object.fromEntries(chartRes.rows.map(r => [Math.floor(r.month_num), Number(r.ms)]));
+      chartData = monthLabels.map((l, i) => ({ label: l, ms: monthMap[i + 1] || 0 }));
+    } else if (chartPeriod === 'month' && chartRes) {
+      const weekMap = Object.fromEntries(chartRes.rows.map(r => [Math.floor(r.week_idx), Number(r.ms)]));
+      chartData = [
+        { label: 'S1', ms: weekMap[0] || 0 },
+        { label: 'S2', ms: weekMap[1] || 0 },
+        { label: 'S3', ms: weekMap[2] || 0 },
+        { label: 'S4', ms: weekMap[3] || weekMap[4] || 0 }
+      ];
+    } else {
+      chartData = weekData;
+    }
+
+    if (partial === 'chart') return NextResponse.json({ chartData });
+
+    // Format Trends Data
     const firstUts = firstEntryRes.rows[0]?.first_uts || (Date.now() / 1000);
     const firstDate = firstEntryRes.rows[0]?.first_uts ? new Date(firstEntryRes.rows[0].first_uts * 1000).toISOString() : null;
     const totalWeeks = Math.max(1, (Date.now() / 1000 - firstUts) / (60 * 60 * 24 * 7));
 
-    // Hourly Activity (Single Query Optimization)
-    const hourlyRes = await db.query(`
-      SELECT 
-        EXTRACT(HOUR FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as hour,
-        SUM(duration_ms) as total_ms
-      FROM ecoutes
-      WHERE user_id = $1
-      GROUP BY hour
-    `, [userId]);
     const hourlyMap = Object.fromEntries(hourlyRes.rows.map(r => [Math.floor(r.hour), Number(r.total_ms)]));
     const hourlyActivity = Array.from({ length: 24 }, (_, h) => ({
       label: `${h.toString().padStart(2, '0')}h`,
       ms: (hourlyMap[h] || 0) / totalWeeks
     }));
 
-    // Daily Activity (Single Query Optimization)
     const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    const dailyRes = await db.query(`
-      SELECT 
-        EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as dow,
-        SUM(duration_ms) as total_ms
-      FROM ecoutes
-      WHERE user_id = $1
-      GROUP BY dow
-    `, [userId]);
     const dailyMap = Object.fromEntries(dailyRes.rows.map(r => [Math.floor(r.dow), Number(r.total_ms)]));
     const dailyActivity = dayNames.map((l, i) => ({
       label: l,
       ms: (dailyMap[i + 1] || 0) / totalWeeks
     }));
 
-    // 9. Obsession
-    const obsessionRes = await db.query(`
-      SELECT 
-        track_name as title, 
-        artist_name as artist, 
-        image_url,
-        COUNT(*) as play_count
-      FROM ecoutes
-      WHERE to_timestamp(played_at_uts) >= NOW() - INTERVAL '2 days'
-      AND user_id = $1
-      GROUP BY track_name, artist_name, image_url
-      ORDER BY play_count DESC, MAX(played_at_uts) DESC
-      LIMIT 1
-    `, [userId]);
     const obsession = obsessionRes.rows[0];
 
     return NextResponse.json({
@@ -268,7 +158,7 @@ export async function GET(request: NextRequest) {
       hourlyActivity,
       dailyActivity,
       newArtists: newArtistsRes.rows,
-      prevWeekTotal: Number(prevWeekTotal),
+      prevWeekTotal: Number(prevWeekRes.rows[0]?.total_ms || 0),
       obsession: obsession && Number(obsession.play_count) > 1 ? { ...obsession, play_count: Number(obsession.play_count) } : null,
       firstEntryDate: firstDate,
       isAuthenticated: true,
