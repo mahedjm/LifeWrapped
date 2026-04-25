@@ -31,7 +31,7 @@ export default function BadgesSection({ badges = [] }: BadgesSectionProps) {
     <div className="badges-container animated" style={{ animationDelay: '0.3s' }}>
       <style jsx>{`
         .badges-container {
-          margin: 40px 0;
+          margin: 20px 0;
         }
         .badge-grid {
           display: grid;

@@ -1,13 +1,15 @@
 'use client';
 
-import { X, Music, User, TrendingUp, Clock } from 'lucide-react';
+import { X, Music, User, TrendingUp, Clock, Award, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { formatTime } from '@/lib/utils';
+import BadgesSection from '@/components/BadgesSection';
 
 interface FriendStats {
   username: string;
   topArtists: { artist: string; total_ms: number; image_url: string | null }[];
   topTracks: { title: string; artist: string; play_count: number; image_url: string | null }[];
+  badges: any[];
 }
 
 interface FriendProfileModalProps {
@@ -18,6 +20,7 @@ interface FriendProfileModalProps {
 export default function FriendProfileModal({ friendId, onClose }: FriendProfileModalProps) {
   const [stats, setStats] = useState<FriendStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [openSection, setOpenSection] = useState<string>('succes');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -60,44 +63,76 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
               </div>
             </div>
 
-            <div className="stats-sections">
-              <section className="stats-column">
-                <div className="section-title">
-                  <TrendingUp size={18} color="var(--accent-green)" />
-                  <h3>Top 5 Artistes <span className="month-tag">du mois</span></h3>
+            <div className="accordion-container">
+              {/* Accordion: Succès */}
+              <div className={`accordion-item ${openSection === 'succes' ? 'open' : ''}`}>
+                <button className="accordion-header" onClick={() => setOpenSection(openSection === 'succes' ? '' : 'succes')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Award size={20} color={openSection === 'succes' ? 'var(--accent-green)' : 'white'} />
+                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Badges de Succès</h3>
+                  </div>
+                  <ChevronDown size={20} className="accordion-icon" />
+                </button>
+                <div className="accordion-content">
+                  <div style={{ padding: '0 20px 20px 20px' }}>
+                    <BadgesSection badges={stats.badges} />
+                  </div>
                 </div>
-                <div className="stats-list">
-                  {stats.topArtists.map((a, i) => (
-                    <div key={i} className="stat-item">
-                      <span className="stat-rank">{i + 1}</span>
-                      {a.image_url ? <img src={a.image_url} alt="" /> : <div className="placeholder-img"><User size={16} /></div>}
-                      <div className="stat-info">
-                        <div className="stat-name">{a.artist}</div>
-                        <div className="stat-sub">{formatTime(a.total_ms)}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
+              </div>
 
-              <section className="stats-column">
-                <div className="section-title">
-                  <Music size={18} color="var(--accent-green)" />
-                  <h3>Top 5 Sons <span className="month-tag">du mois</span></h3>
-                </div>
-                <div className="stats-list">
-                  {stats.topTracks.map((t, i) => (
-                    <div key={i} className="stat-item">
-                      <span className="stat-rank">{i + 1}</span>
-                      {t.image_url ? <img src={t.image_url} alt="" /> : <div className="placeholder-img"><Music size={16} /></div>}
-                      <div className="stat-info">
-                        <div className="stat-name">{t.title}</div>
-                        <div className="stat-sub">{t.artist} • {t.play_count} écoutes</div>
-                      </div>
+              {/* Accordion: Top 5 Sons */}
+              <div className={`accordion-item ${openSection === 'tracks' ? 'open' : ''}`}>
+                <button className="accordion-header" onClick={() => setOpenSection(openSection === 'tracks' ? '' : 'tracks')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Music size={20} color={openSection === 'tracks' ? 'var(--accent-green)' : 'white'} />
+                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Top 5 Sons <span className="month-tag">du mois</span></h3>
+                  </div>
+                  <ChevronDown size={20} className="accordion-icon" />
+                </button>
+                <div className="accordion-content">
+                  <div style={{ padding: '0 20px 20px 20px' }}>
+                    <div className="stats-list">
+                      {stats.topTracks.map((t, i) => (
+                        <div key={i} className="stat-item">
+                          <span className="stat-rank">{i + 1}</span>
+                          {t.image_url ? <img src={t.image_url} alt="" /> : <div className="placeholder-img"><Music size={16} /></div>}
+                          <div className="stat-info">
+                            <div className="stat-name">{t.title}</div>
+                            <div className="stat-sub">{t.artist} • {t.play_count} écoutes</div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </section>
+              </div>
+
+              {/* Accordion: Top 5 Artistes */}
+              <div className={`accordion-item ${openSection === 'artists' ? 'open' : ''}`}>
+                <button className="accordion-header" onClick={() => setOpenSection(openSection === 'artists' ? '' : 'artists')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <TrendingUp size={20} color={openSection === 'artists' ? 'var(--accent-green)' : 'white'} />
+                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Top 5 Artistes <span className="month-tag">du mois</span></h3>
+                  </div>
+                  <ChevronDown size={20} className="accordion-icon" />
+                </button>
+                <div className="accordion-content">
+                  <div style={{ padding: '0 20px 20px 20px' }}>
+                    <div className="stats-list">
+                      {stats.topArtists.map((a, i) => (
+                        <div key={i} className="stat-item">
+                          <span className="stat-rank">{i + 1}</span>
+                          {a.image_url ? <img src={a.image_url} alt="" /> : <div className="placeholder-img"><User size={16} /></div>}
+                          <div className="stat-info">
+                            <div className="stat-name">{a.artist}</div>
+                            <div className="stat-sub">{formatTime(a.total_ms)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         ) : (
@@ -168,23 +203,55 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
           justify-content: center;
         }
 
-        .stats-sections {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 40px;
+        .accordion-container {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
         }
-        @media (max-width: 700px) {
-          .stats-sections { grid-template-columns: 1fr; }
-          .modal-content { padding: 30px 20px; }
+        .accordion-item {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px;
+          overflow: hidden;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-item.open {
+          background: rgba(255, 255, 255, 0.04);
+          border-color: color-mix(in srgb, var(--accent-green), transparent 80%);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .accordion-header {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px;
+          background: transparent;
+          border: none;
+          color: white;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .accordion-icon {
+          transition: transform 0.3s ease;
+          opacity: 0.5;
+        }
+        .accordion-item.open .accordion-icon {
+          transform: rotate(180deg);
+          color: var(--accent-green);
+          opacity: 1;
+        }
+        .accordion-content {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+          opacity: 0;
+        }
+        .accordion-item.open .accordion-content {
+          max-height: 1000px; /* Grande valeur pour permettre l'expansion */
+          opacity: 1;
         }
 
-        .section-title {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-        .section-title h3 { margin: 0; font-size: 1.1rem; }
         .month-tag {
           font-size: 0.7rem;
           background: rgba(255,255,255,0.05);
@@ -192,9 +259,10 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
           border-radius: 4px;
           opacity: 0.6;
           margin-left: 5px;
+          font-weight: normal;
         }
 
-        .stats-list { display: flex; flex-direction: column; gap: 15px; }
+        .stats-list { display: flex; flex-direction: column; gap: 10px; }
         .stat-item {
           display: flex;
           align-items: center;
@@ -205,13 +273,13 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
           transition: background 0.2s;
         }
         .stat-item:hover { background: rgba(255,255,255,0.06); }
-        .stat-rank { font-weight: 900; opacity: 0.2; font-size: 1.2rem; width: 20px; }
+        .stat-rank { font-weight: 900; opacity: 0.2; font-size: 1.2rem; width: 20px; text-align: center; }
         .stat-item img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
         .placeholder-img { 
           width: 45px; height: 45px; background: #222; border-radius: 8px; 
           display: flex; align-items: center; justify-content: center; opacity: 0.3;
         }
-        .stat-name { font-weight: 700; font-size: 0.9rem; color: white; }
+        .stat-name { font-weight: 700; font-size: 0.95rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .stat-sub { font-size: 0.8rem; opacity: 0.5; }
 
         .loading-state { text-align: center; padding: 60px 0; }
