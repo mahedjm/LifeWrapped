@@ -163,6 +163,10 @@ export async function GET(request: NextRequest) {
       firstEntryDate: firstDate,
       isAuthenticated: true,
       username: username
+    }, {
+      headers: sync
+        ? { 'Cache-Control': 'no-store' }
+        : { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
     });
   } catch (error) {
     console.error('API Stats Error:', error);

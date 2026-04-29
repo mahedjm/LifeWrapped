@@ -28,7 +28,9 @@ const LOADING_PHRASES = [
   "Chargement de tes stats (prépare-toi psychologiquement)...",
   "On essaie de comprendre pourquoi tu écoutes encore ce titre...",
   "Analyse de tes habitudes (spoiler: c'est brillant)...",
-  "Synchronisation avec ton âme musicale..."
+  "Synchronisation avec ton âme musicale...",
+  "Récupération de tes dernières pépites écoutées aujourd'hui...",
+  "Mise à jour de ton classement en direct..."
 ];
 
 // Libs & Hooks
@@ -57,6 +59,8 @@ export default function Home() {
   const [friendsRefreshKey, setFriendsRefreshKey] = useState(0);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
   const [showPhrases, setShowPhrases] = useState(false);
+  const [isMinLoadingTimeDone, setIsMinLoadingTimeDone] = useState(false);
+  const initialSyncRef = useRef(false);
   
   // Custom Hooks (Logic extraction)
   const { themeColor, setThemeColor } = useTheme();
@@ -154,16 +158,31 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (loading) {
+    // Premier montage : on lance la synchro auto
+    if (!initialSyncRef.current) {
+      initialSyncRef.current = true;
+      fetchStats(true, period, trackPeriod, chartPeriod, artistLimit, trackLimit, false, period, trackPeriod);
+      
+      // On s'assure que l'animation dure au moins 3.5 secondes pour le "feeling" premium
+      const timer = setTimeout(() => {
+        setIsMinLoadingTimeDone(true);
+      }, 3500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loading || !isMinLoadingTimeDone) {
       // Retard d'apparition pour la première phrase
-      const delayTimer = setTimeout(() => setShowPhrases(true), 1500);
+      const delayTimer = setTimeout(() => setShowPhrases(true), 800);
 
       // On commence par une phrase au hasard
       setLoadingPhraseIndex(Math.floor(Math.random() * LOADING_PHRASES.length));
       
       const interval = setInterval(() => {
         setLoadingPhraseIndex(prev => (prev + 1) % LOADING_PHRASES.length);
-      }, 3500);
+      }, 3000);
       
       return () => {
         clearInterval(interval);
@@ -171,7 +190,7 @@ export default function Home() {
         setShowPhrases(false);
       };
     }
-  }, [loading]);
+  }, [loading, isMinLoadingTimeDone]);
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -201,6 +220,9 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // On ignore le premier rendu ici car il est géré par la synchro initiale
+    if (!initialSyncRef.current) return;
+
     const timer = setTimeout(() => {
       fetchStats(false, period, trackPeriod, chartPeriod, artistLimit, trackLimit, false, period, trackPeriod);
     }, 300);
@@ -240,7 +262,7 @@ export default function Home() {
 
   // Duplicate removed
 
-  if (loading) {
+  if (loading || !isMinLoadingTimeDone) {
     return (
       <div style={{ 
         display: 'flex', 
