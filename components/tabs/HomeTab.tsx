@@ -27,19 +27,45 @@ interface HomeTabProps {
   themeColor: string;
   loadingChart: boolean;
   syncing: boolean;
+  loading: boolean;
 }
 
 export default function HomeTab({
   stats, period, setPeriod, trackPeriod, setTrackPeriod, chartPeriod, setChartPeriod,
   artistLimit, setArtistLimit, trackLimit, setTrackLimit, showArtistLimit, setShowArtistLimit,
-  showTrackLimit, setShowTrackLimit, themeColor, loadingChart, syncing
+  showTrackLimit, setShowTrackLimit, themeColor, loadingChart, syncing, loading
 }: HomeTabProps) {
   
   const weeklyTotalMs = stats?.weekly?.reduce((acc, curr) => acc + curr.ms, 0) || 0;
   const hasData = stats?.chartData?.some(d => d.ms > 0);
 
   return (
-    <>
+    <div style={{ 
+      opacity: loading ? 0.7 : 1, 
+      filter: loading ? 'blur(1px)' : 'none',
+      transition: 'all 0.3s ease',
+      position: 'relative'
+    }}>
+      {loading && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1000,
+          background: 'rgba(0,0,0,0.5)',
+          padding: '15px',
+          borderRadius: '50%',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px solid var(--glass-border)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+        }}>
+          <RefreshCw size={30} color={themeColor} className="animate-spin" />
+        </div>
+      )}
       {/* KPI Cards (Aujourd'hui, Semaine, Record) */}
       <div className="kpi-grid">
         <div className="card animated" style={{ animationDelay: '0.1s' }}>
@@ -433,6 +459,6 @@ export default function HomeTab({
         .scrollable-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .scrollable-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
       `}</style>
-    </>
+    </div>
   );
 }

@@ -60,6 +60,7 @@ export default function Home() {
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
   const [showPhrases, setShowPhrases] = useState(false);
   const [isMinLoadingTimeDone, setIsMinLoadingTimeDone] = useState(false);
+  const [isAppInitializing, setIsAppInitializing] = useState(true);
   const initialSyncRef = useRef(false);
   
   // Custom Hooks (Logic extraction)
@@ -172,8 +173,15 @@ export default function Home() {
     }
   }, []);
 
+  // On arrête l'initialisation quand les stats sont là ET que le timer est fini
   useEffect(() => {
-    if (loading || !isMinLoadingTimeDone) {
+    if (!loading && isMinLoadingTimeDone && isAppInitializing) {
+      setIsAppInitializing(false);
+    }
+  }, [loading, isMinLoadingTimeDone, isAppInitializing]);
+
+  useEffect(() => {
+    if (isAppInitializing) {
       // Retard d'apparition pour la première phrase
       const delayTimer = setTimeout(() => setShowPhrases(true), 800);
 
@@ -190,7 +198,7 @@ export default function Home() {
         setShowPhrases(false);
       };
     }
-  }, [loading, isMinLoadingTimeDone]);
+  }, [isAppInitializing]);
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -262,7 +270,7 @@ export default function Home() {
 
   // Duplicate removed
 
-  if (loading || !isMinLoadingTimeDone) {
+  if (isAppInitializing) {
     return (
       <div style={{ 
         display: 'flex', 
@@ -473,7 +481,7 @@ export default function Home() {
           trackLimit={trackLimit} setTrackLimit={setTrackLimit}
           showArtistLimit={showArtistLimit} setShowArtistLimit={setShowArtistLimit}
           showTrackLimit={showTrackLimit} setShowTrackLimit={setShowTrackLimit}
-          themeColor={themeColor || '#1DB954'} loadingChart={loadingChart} syncing={syncing}
+          themeColor={themeColor || '#1DB954'} loadingChart={loadingChart} syncing={syncing} loading={loading}
         />
       )}
 
