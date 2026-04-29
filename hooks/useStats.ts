@@ -24,8 +24,8 @@ export function useStats(
     currentArtistLimit = initialArtistLimit,
     currentTrackLimit = initialTrackLimit,
     isManual = false,
-    activePeriod = initialPeriod,
-    activeTrackPeriod = initialTrackPeriod,
+    _unusedA = '',
+    _unusedB = '',
     forceLoading = false
   ) => {
     // Annulation de la requête précédente si elle existe encore
@@ -49,12 +49,7 @@ export function useStats(
       url.searchParams.set('artistLimit', currentArtistLimit.toString());
       url.searchParams.set('trackLimit', currentTrackLimit.toString());
 
-      // Partial loading: UNIQUEMENT si seul le graphique change, pas les listes artistes/titres
-      const isChartOnly = currentChartPeriod !== activePeriod && currentArtistPeriod === activePeriod && currentTrackPeriod === activeTrackPeriod && !sync;
-      if (isChartOnly) {
-        url.searchParams.set('partial', 'chart');
-        setLoadingChart(true);
-      }
+      // Toujours faire un rechargement complet pour garantir la cohérence des données
 
       const [statsRes, badgesRes] = await Promise.all([
         fetch(url.toString(), { signal: controller.signal }),
