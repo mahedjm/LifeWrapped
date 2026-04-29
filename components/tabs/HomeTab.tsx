@@ -257,40 +257,40 @@ export default function HomeTab({
             {/* TOP ARTISTS */}
             {stats?.topArtists && stats.topArtists.length > 0 && (
               <div className="chart-container animated" style={{ animationDelay: '0.5s' }}>
-                <div className="chart-header">
-                  <div className="section-badge-container" style={{ position: 'relative' }}>
-                    <button 
-                      onClick={() => setShowArtistLimit(!showArtistLimit)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '10px', background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-                        padding: '6px 20px', borderRadius: '50px', border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-                        cursor: 'pointer', color: 'inherit', fontFamily: 'inherit', transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <Music size={16} color="var(--accent-green)" />
-                      <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Top {artistLimit} Artistes
-                        <ChevronDown size={14} style={{ transform: showArtistLimit ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                        <InfoTooltip text="Vos artistes les plus écoutés sur la période sélectionnée." />
-                      </h3>
-                    </button>
-                    {showArtistLimit && (
-                      <div className="custom-select-menu" style={{ top: '110%', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
-                        {[5, 10, 25, 50].map(l => (
-                          <div key={l} className={`custom-select-item ${artistLimit === l ? 'active' : ''}`} onClick={() => { setArtistLimit(l); setShowArtistLimit(false); }}>Top {l}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
-                    <div style={{ display: 'flex', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '24px', border: '1px solid var(--glass-border)', minWidth: '200px', justifyContent: 'space-between' }}>
-                      {['week', 'month', 'year'].map(p => (
-                        <button key={p} onClick={() => setPeriod(p as any)} style={{
-                            flex: 1, padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer',
-                            background: period === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent', color: period === p ? 'var(--accent-green)' : 'var(--text-secondary)', transition: 'all 0.2s ease', whiteSpace: 'nowrap'
-                          }}>{p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Année'}</button>
-                      ))}
+                <div className="chart-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div className="section-badge-container" style={{ position: 'relative' }}>
+                      <button 
+                        onClick={() => setShowArtistLimit(!showArtistLimit)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '10px', background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
+                          padding: '6px 20px', borderRadius: '50px', border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
+                          cursor: 'pointer', color: 'inherit', fontFamily: 'inherit', transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <Music size={16} color="var(--accent-green)" />
+                        <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          Top {artistLimit} Artistes
+                          <ChevronDown size={14} style={{ transform: showArtistLimit ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                          <InfoTooltip text="Vos artistes les plus écoutés sur la période sélectionnée." />
+                        </h3>
+                      </button>
+                      {showArtistLimit && (
+                        <div className="custom-select-menu" style={{ top: '110%', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
+                          {[5, 10, 25, 50].map(l => (
+                            <div key={l} className={`custom-select-item ${artistLimit === l ? 'active' : ''}`} onClick={() => { setArtistLimit(l); setShowArtistLimit(false); }}>Top {l}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '24px', border: '1px solid var(--glass-border)', justifyContent: 'space-between', alignSelf: 'stretch' }}>
+                    {['week', 'month', 'year'].map(p => (
+                      <button key={p} onClick={() => setPeriod(p as any)} style={{
+                          flex: 1, padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer',
+                          background: period === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent', color: period === p ? 'var(--accent-green)' : 'var(--text-secondary)', transition: 'all 0.2s ease', whiteSpace: 'nowrap'
+                        }}>{p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Année'}</button>
+                    ))}
                   </div>
                 </div>
                 <div className="scrollable-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: stats.topArtists.length > 5 ? '400px' : 'none', overflowY: stats.topArtists.length > 5 ? 'auto' : 'visible', paddingRight: stats.topArtists.length > 5 ? '12px' : '0', opacity: syncing ? 0.6 : 1, transition: 'opacity 0.3s ease' }}>
@@ -323,40 +323,40 @@ export default function HomeTab({
             {/* TOP TRACKS */}
             {stats?.topTracks && stats.topTracks.length > 0 && (
               <div className="chart-container animated" style={{ animationDelay: '0.6s' }}>
-                <div className="chart-header">
-                  <div className="section-badge-container" style={{ position: 'relative' }}>
-                    <button 
-                      onClick={() => setShowTrackLimit(!showTrackLimit)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '10px', background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-                        padding: '6px 20px', borderRadius: '50px', border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
-                        cursor: 'pointer', color: 'inherit', fontFamily: 'inherit', transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <Clock size={16} color="var(--accent-green)" />
-                      <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        Top {trackLimit} Titres
-                        <ChevronDown size={14} style={{ transform: showTrackLimit ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                        <InfoTooltip text="Vos morceaux les plus écoutés sur la période sélectionnée." />
-                      </h3>
-                    </button>
-                    {showTrackLimit && (
-                      <div className="custom-select-menu" style={{ top: '110%', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
-                        {[5, 10, 25, 50].map(l => (
-                          <div key={l} className={`custom-select-item ${trackLimit === l ? 'active' : ''}`} onClick={() => { setTrackLimit(l); setShowTrackLimit(false); }}>Top {l}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="filter-row-mobile" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
-                    <div style={{ display: 'flex', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '24px', border: '1px solid var(--glass-border)', minWidth: '200px', justifyContent: 'space-between' }}>
-                      {['week', 'month', 'year'].map(p => (
-                        <button key={p} onClick={() => setTrackPeriod(p as any)} style={{
-                            flex: 1, padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer',
-                            background: trackPeriod === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent', color: trackPeriod === p ? 'var(--accent-green)' : 'var(--text-secondary)', transition: 'all 0.2s ease', whiteSpace: 'nowrap'
-                          }}>{p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Année'}</button>
-                      ))}
+                <div className="chart-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div className="section-badge-container" style={{ position: 'relative' }}>
+                      <button 
+                        onClick={() => setShowTrackLimit(!showTrackLimit)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '10px', background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
+                          padding: '6px 20px', borderRadius: '50px', border: '1px solid color-mix(in srgb, var(--accent-green), transparent 80%)',
+                          cursor: 'pointer', color: 'inherit', fontFamily: 'inherit', transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <Clock size={16} color="var(--accent-green)" />
+                        <h3 style={{ fontSize: '0.9rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          Top {trackLimit} Titres
+                          <ChevronDown size={14} style={{ transform: showTrackLimit ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                          <InfoTooltip text="Vos morceaux les plus écoutés sur la période sélectionnée." />
+                        </h3>
+                      </button>
+                      {showTrackLimit && (
+                        <div className="custom-select-menu" style={{ top: '110%', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
+                          {[5, 10, 25, 50].map(l => (
+                            <div key={l} className={`custom-select-item ${trackLimit === l ? 'active' : ''}`} onClick={() => { setTrackLimit(l); setShowTrackLimit(false); }}>Top {l}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '24px', border: '1px solid var(--glass-border)', justifyContent: 'space-between', alignSelf: 'stretch' }}>
+                    {['week', 'month', 'year'].map(p => (
+                      <button key={p} onClick={() => setTrackPeriod(p as any)} style={{
+                          flex: 1, padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer',
+                          background: trackPeriod === p ? `color-mix(in srgb, ${themeColor}, transparent 90%)` : 'transparent', color: trackPeriod === p ? 'var(--accent-green)' : 'var(--text-secondary)', transition: 'all 0.2s ease', whiteSpace: 'nowrap'
+                        }}>{p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Année'}</button>
+                    ))}
                   </div>
                 </div>
                 <div className="scrollable-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: stats.topTracks.length > 5 ? '400px' : 'none', overflowY: stats.topTracks.length > 5 ? 'auto' : 'visible', paddingRight: stats.topTracks.length > 5 ? '12px' : '0', opacity: syncing ? 0.6 : 1, transition: 'opacity 0.3s ease' }}>
@@ -391,6 +391,48 @@ export default function HomeTab({
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .custom-select-menu {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 50%;
+          transform: translateX(-50%);
+          background: #181818;
+          border: 1px solid var(--glass-border);
+          border-radius: 12px;
+          overflow: hidden;
+          z-index: 200;
+          min-width: 120px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+          animation: fadeInDown 0.15s ease;
+        }
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .custom-select-item {
+          padding: 10px 18px;
+          font-size: 0.9rem;
+          cursor: pointer;
+          color: var(--text-secondary);
+          transition: background 0.15s, color 0.15s;
+          white-space: nowrap;
+        }
+        .custom-select-item:hover {
+          background: rgba(255,255,255,0.08);
+          color: white;
+        }
+        .custom-select-item.active {
+          color: var(--accent-green);
+          background: color-mix(in srgb, var(--accent-green), transparent 90%);
+          font-weight: 700;
+        }
+        .scrollable-list::-webkit-scrollbar { width: 6px; }
+        .scrollable-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+        .scrollable-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .scrollable-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+      `}</style>
     </>
   );
 }

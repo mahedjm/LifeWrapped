@@ -49,8 +49,8 @@ export function useStats(
       url.searchParams.set('artistLimit', currentArtistLimit.toString());
       url.searchParams.set('trackLimit', currentTrackLimit.toString());
 
-      // Partial loading logic
-      const isChartOnly = currentChartPeriod !== initialChartPeriod && currentArtistPeriod === activePeriod && currentTrackPeriod === activeTrackPeriod && !sync;
+      // Partial loading: UNIQUEMENT si seul le graphique change, pas les listes artistes/titres
+      const isChartOnly = currentChartPeriod !== activePeriod && currentArtistPeriod === activePeriod && currentTrackPeriod === activeTrackPeriod && !sync;
       if (isChartOnly) {
         url.searchParams.set('partial', 'chart');
         setLoadingChart(true);
@@ -94,7 +94,7 @@ export function useStats(
         setManualSyncing(false);
       }
     }
-  }, [initialPeriod, initialTrackPeriod, initialChartPeriod, initialArtistLimit, initialTrackLimit]);
+  }, []); // Référence stable — tous les params sont passés explicitement à chaque appel
 
   return {
     stats,

@@ -38,6 +38,26 @@ export default function BadgesSection({ badges = [] }: BadgesSectionProps) {
           grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
           gap: 10px;
         }
+        @media (max-width: 480px) {
+          .badge-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+          }
+          .badge-card {
+            padding: 12px;
+            min-height: 160px;
+          }
+          .badge-name {
+            font-size: 0.75rem;
+          }
+          .badge-desc {
+            font-size: 0.65rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+        }
         .badge-card {
           background: rgba(255, 255, 255, 0.03);
           border: 1px solid var(--glass-border);

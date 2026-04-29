@@ -289,6 +289,31 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
           margin: 0 auto 20px; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+          .modal-content {
+            padding: 20px;
+            border-radius: 20px;
+          }
+          .profile-header {
+            margin-bottom: 25px;
+            gap: 15px;
+          }
+          .profile-avatar {
+            width: 60px;
+            height: 60px;
+          }
+          .profile-avatar :global(svg) {
+            width: 30px;
+            height: 30px;
+          }
+          .accordion-header {
+            padding: 15px;
+          }
+          .accordion-header h3 {
+            font-size: 1rem !important;
+          }
+        }
       `}</style>
     </div>
   );
