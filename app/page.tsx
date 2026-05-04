@@ -227,9 +227,14 @@ export default function Home() {
     }
   };
 
+  const firstRenderSkipRef = useRef(true);
+
   useEffect(() => {
-    // On ignore le premier rendu ici car il est géré par la synchro initiale
-    if (!initialSyncRef.current) return;
+    // On ignore complètement le premier rendu car il est géré par la synchro initiale
+    if (firstRenderSkipRef.current) {
+      firstRenderSkipRef.current = false;
+      return;
+    }
 
     const timer = setTimeout(() => {
       fetchStats(false, period, trackPeriod, chartPeriod, artistLimit, trackLimit, false, period, trackPeriod);
