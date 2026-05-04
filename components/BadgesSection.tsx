@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sunrise, Moon, Compass, Heart, Headphones, Lock, CheckCircle2, Award, Users } from 'lucide-react';
+import { Sunrise, Moon, Compass, Heart, Headphones, Lock, CheckCircle2, Award, Users, Star } from 'lucide-react';
 import { Badge } from '@/lib/types';
 
 const ICON_MAP: Record<string, any> = {
@@ -10,7 +10,8 @@ const ICON_MAP: Record<string, any> = {
   Compass,
   Heart,
   Headphones,
-  Users
+  Users,
+  Star
 };
 
 const LEVEL_COLORS = {
@@ -225,6 +226,8 @@ export default function BadgesSection({ badges = [], hideTitle = false }: Badges
                         badge.id === 'explorer' ? 'artistes' : 
                         badge.id === 'loyal' ? 'jours' : 
                         badge.id === 'melomaniac' ? 'heures' : 
+                        badge.id === 'marathonien' ? 'heures' :
+                        badge.id === 'nightowl' ? 'écoutes' :
                         'amis'
                       }
                     </span>

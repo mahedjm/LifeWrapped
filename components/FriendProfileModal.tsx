@@ -4,20 +4,27 @@ import { X, Music, User, TrendingUp, Clock, Award, ChevronDown } from 'lucide-re
 import { useState, useEffect } from 'react';
 import { formatTime } from '@/lib/utils';
 import BadgesSection from '@/components/BadgesSection';
+import UserAvatar from '@/components/UserAvatar';
 
 interface FriendStats {
   username: string;
   topArtists: { artist: string; total_ms: number; image_url: string | null }[];
   topTracks: { title: string; artist: string; play_count: number; image_url: string | null }[];
   badges: any[];
+  nowPlaying?: {
+    name: string;
+    artist: string;
+    image: string;
+  };
 }
 
 interface FriendProfileModalProps {
   friendId: string;
   onClose: () => void;
+  themeColor: string;
 }
 
-export default function FriendProfileModal({ friendId, onClose }: FriendProfileModalProps) {
+export default function FriendProfileModal({ friendId, onClose, themeColor }: FriendProfileModalProps) {
   const [stats, setStats] = useState<FriendStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [openSection, setOpenSection] = useState<string>('');
@@ -54,14 +61,81 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
         ) : stats ? (
           <>
             <div className="profile-header">
-              <div className="profile-avatar">
-                <User size={40} color="var(--accent-green)" />
-              </div>
+              <UserAvatar 
+                username={stats.username} 
+                badges={stats.badges} 
+                themeColor={themeColor} 
+                size={80} 
+              />
               <div>
                 <h2 style={{ margin: 0 }}>@{stats.username}</h2>
                 <p style={{ opacity: 0.5, margin: 0, fontSize: '0.9rem' }}>Profil Écho</p>
               </div>
             </div>
+
+            {/* Live Indicator */}
+            {stats.nowPlaying && (
+              <div className="live-container" style={{ 
+                margin: '0 0 20px 0', 
+                background: `${themeColor}1a`, 
+                border: `1px solid ${themeColor}4d`,
+                padding: '12px 16px',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                animation: 'fadeInUp 0.5s ease-out'
+              }}>
+                <div className="live-dot-container" style={{ position: 'relative', width: '12px', height: '12px' }}>
+                  <div className="live-dot" style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    background: themeColor, 
+                    borderRadius: '50%' 
+                  }} />
+                  <div className="live-pulse" style={{ 
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    background: themeColor,
+                    borderRadius: '50%',
+                    animation: 'pulse-theme 2s infinite'
+                  }} />
+                </div>
+                
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: themeColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    En direct
+                  </p>
+                  <a 
+                    href={`https://open.spotify.com/search/${encodeURIComponent(stats.nowPlaying.name + ' ' + stats.nowPlaying.artist)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'block',
+                      margin: '2px 0 0 0', 
+                      fontSize: '0.95rem', 
+                      color: 'white', 
+                      fontWeight: 600,
+                      textDecoration: 'none'
+                    }}
+                    className="hover-underline"
+                  >
+                    {stats.nowPlaying.name} — {stats.nowPlaying.artist}
+                  </a>
+                </div>
+                
+                {stats.nowPlaying.image && (
+                  <img 
+                    src={stats.nowPlaying.image} 
+                    alt="" 
+                    style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} 
+                  />
+                )}
+              </div>
+            )}
 
             <div className="accordion-container">
               {/* Accordion: Top 5 Sons */}
@@ -188,19 +262,20 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
         .profile-header {
           display: flex;
           align-items: center;
-          gap: 20px;
+          gap: 25px;
           margin-bottom: 40px;
           padding-bottom: 25px;
           border-bottom: 1px solid var(--glass-border);
         }
-        .profile-avatar {
-          width: 70px;
-          height: 70px;
-          background: color-mix(in srgb, var(--accent-green), transparent 90%);
-          border-radius: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+
+        @keyframes pulse-theme {
+          0% { transform: scale(1); opacity: 0.8; }
+          70% { transform: scale(2.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 0; }
+        }
+
+        .hover-underline:hover {
+          text-decoration: underline !important;
         }
 
         .accordion-container {

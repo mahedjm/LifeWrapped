@@ -8,7 +8,8 @@ export async function GET() {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const friends = await db.query(`
-      SELECT u.id, u.username 
+      SELECT u.id, u.username,
+             (SELECT COALESCE(SUM(lvl), 0) FROM (SELECT MAX(level) as lvl FROM user_badges WHERE user_id = u.id GROUP BY badge_id) s) as total_level
       FROM users u
       JOIN friendships f ON u.id = f.friend_id
       WHERE f.user_id = $1 AND f.status = 'accepted'

@@ -4,13 +4,15 @@ import FriendsList from '@/components/FriendsList';
 interface FriendsTabProps {
   setSelectedFriendId: (id: string | null) => void;
   friendsRefreshKey: number;
+  themeColor: string;
 }
 
-export default function FriendsTab({ setSelectedFriendId, friendsRefreshKey }: FriendsTabProps) {
+export default function FriendsTab({ setSelectedFriendId, friendsRefreshKey, themeColor }: FriendsTabProps) {
   return (
     <FriendsList 
       onFriendClick={(id) => setSelectedFriendId(id)} 
-      refreshKey={friendsRefreshKey} 
+      refreshKey={friendsRefreshKey}
+      themeColor={themeColor}
     />
   );
 }

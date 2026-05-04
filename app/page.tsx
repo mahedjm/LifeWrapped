@@ -6,7 +6,7 @@ import {
   Activity, Clock, Calendar, BarChart3, RefreshCw, 
   AlertCircle, Music, ChevronDown, PieChart, HelpCircle, 
   Share2, LogOut, User, Palette, Users, Bell, 
-  Search, TrendingUp, Award, Grid, Zap, Info, Layers, X
+  Search, TrendingUp, Award, Grid, Zap, Info, Layers, X, Crown
 } from 'lucide-react';
 import HomeTab from '@/components/tabs/HomeTab';
 import ClubTab from '@/components/tabs/ClubTab';
@@ -16,8 +16,7 @@ import NowPlaying from '@/components/NowPlaying';
 import FriendProfileModal from '@/components/FriendProfileModal';
 import FloatingActions from '@/components/FloatingActions';
 import ShareCard from '@/components/ShareCard';
-
-
+import UserAvatar from '@/components/UserAvatar';
 
 const LOADING_PHRASES = [
   "On demande l'avis de tes voisins sur tes goûts musicaux...",
@@ -273,8 +272,6 @@ export default function Home() {
     }
   };
 
-  // Duplicate removed
-
   if (isAppInitializing) {
     return (
       <div style={{ 
@@ -356,7 +353,10 @@ export default function Home() {
                   <div className="user-info">
                     <User size={14} />
                     <span>Connecté en tant que&nbsp;</span>
-                    <strong>{stats.username}</strong>
+                    <strong style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {stats.username}
+                      {stats.username.toLowerCase() === 'blgrevenant' && <Crown size={14} style={{ color: '#FFD700', fill: '#FFD700' }} />}
+                    </strong>
                   </div>
                   <button className="logout-btn" onClick={handleLogout}><LogOut size={18} /></button>
                 </div>
@@ -472,7 +472,7 @@ export default function Home() {
       <NowPlaying track={nowPlaying} />
 
       {activeTab === 'amis' ? (
-        <FriendsTab setSelectedFriendId={setSelectedFriendId} friendsRefreshKey={friendsRefreshKey} />
+        <FriendsTab setSelectedFriendId={setSelectedFriendId} friendsRefreshKey={friendsRefreshKey} themeColor={themeColor || '#1DB954'} />
       ) : activeTab === 'club' ? (
         <ClubTab setSelectedFriendId={setSelectedFriendId} />
       ) : activeTab === 'succes' ? (
@@ -585,26 +585,51 @@ export default function Home() {
           <div className="icon-wrapper">
             <User size={24} />
           </div>
-          <span>Compte</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            Compte
+            {stats?.username?.toLowerCase() === 'blgrevenant' && <Crown size={12} style={{ color: '#FFD700', fill: '#FFD700' }} />}
+          </span>
         </div>
 
         {/* Floating Centered Popups */}
         {showAccount && stats?.username && (
-          <div className="palette-popup" style={{ flexDirection: 'column', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem' }}>@{stats.username}</div>
+          <div className="palette-popup" style={{ flexDirection: 'column', gap: '15px', alignItems: 'center', padding: '25px' }} onClick={(e) => e.stopPropagation()}>
+            <UserAvatar 
+              username={stats.username} 
+              badges={stats.badges || []} 
+              themeColor={themeColor || '#1DB954'} 
+              size={100} 
+            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ color: 'white', fontWeight: 800, fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                @{stats.username}
+                {stats.username.toLowerCase() === 'blgrevenant' && <Crown size={20} style={{ color: '#FFD700', fill: '#FFD700' }} />}
+              </div>
+              <p style={{ margin: '5px 0 0 0', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Niveau {
+                (() => {
+                  const total = (stats.badges || []).reduce((acc: number, b: any) => acc + (b.level || 0), 0);
+                  if (total >= 14) return 'Légende';
+                  if (total >= 10) return 'Expert';
+                  if (total >= 5) return 'Confirmé';
+                  return 'Débutant';
+                })()
+              }</p>
+            </div>
+            <div style={{ width: '100%', height: '1px', background: 'var(--glass-border)', margin: '5px 0' }} />
             <button 
               onClick={handleLogout}
               style={{ 
+                width: '100%',
+                padding: '12px',
+                borderRadius: '12px',
                 background: 'rgba(255, 68, 68, 0.1)', 
                 color: '#ff4444', 
                 border: '1px solid rgba(255, 68, 68, 0.2)', 
-                padding: '10px 20px', 
-                borderRadius: '12px', 
-                fontSize: '0.85rem',
                 fontWeight: 700,
-                width: '100%',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                transition: 'all 0.2s'
               }}
+              className="logout-btn"
             >
               Déconnexion
             </button>
@@ -789,6 +814,7 @@ export default function Home() {
         <FriendProfileModal 
           friendId={selectedFriendId} 
           onClose={() => setSelectedFriendId(null)} 
+          themeColor={themeColor || '#1DB954'}
         />
       )}
       <footer className="footer-credits">

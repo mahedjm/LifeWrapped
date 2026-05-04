@@ -2,9 +2,10 @@
 
 import { UserPlus, UserMinus, Search, Loader2, Users, Share2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import UserAvatar from './UserAvatar';
 
-export default function FriendsList({ onFriendClick, refreshKey }: { onFriendClick?: (id: string) => void, refreshKey?: number }) {
-  const [friends, setFriends] = useState<{ id: string, username: string }[]>([]);
+export default function FriendsList({ onFriendClick, refreshKey, themeColor }: { onFriendClick?: (id: string) => void, refreshKey?: number, themeColor: string }) {
+  const [friends, setFriends] = useState<{ id: string, username: string, total_level?: number }[]>([]);
   const [newFriend, setNewFriend] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -473,20 +474,12 @@ export default function FriendsList({ onFriendClick, refreshKey }: { onFriendCli
           {friends.map(friend => (
             <div key={friend.id} className="friend-card" onClick={() => onFriendClick?.(friend.id)}>
               <div className="friend-name">
-                <div style={{ 
-                  width: '32px', 
-                  height: '32px', 
-                  background: 'var(--accent-green)', 
-                  borderRadius: '50%', 
-                  color: 'black', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  fontSize: '0.9rem',
-                  fontWeight: 900
-                }}>
-                  {friend.username.charAt(0).toUpperCase()}
-                </div>
+                <UserAvatar 
+                  username={friend.username} 
+                  totalLevel={friend.total_level || 0} 
+                  themeColor={themeColor} 
+                  size={42} 
+                />
                 @{friend.username}
               </div>
               <button className="remove-btn" onClick={(e) => {
