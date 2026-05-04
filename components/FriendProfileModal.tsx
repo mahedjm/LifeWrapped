@@ -20,7 +20,7 @@ interface FriendProfileModalProps {
 export default function FriendProfileModal({ friendId, onClose }: FriendProfileModalProps) {
   const [stats, setStats] = useState<FriendStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [openSection, setOpenSection] = useState<string>('succes');
+  const [openSection, setOpenSection] = useState<string>('');
 
   useEffect(() => {
     const fetchStats = async () => {
