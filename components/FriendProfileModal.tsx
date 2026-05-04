@@ -64,22 +64,6 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
             </div>
 
             <div className="accordion-container">
-              {/* Accordion: Succès */}
-              <div className={`accordion-item ${openSection === 'succes' ? 'open' : ''}`}>
-                <button className="accordion-header" onClick={() => setOpenSection(openSection === 'succes' ? '' : 'succes')}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Award size={20} color={openSection === 'succes' ? 'var(--accent-green)' : 'white'} />
-                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Badges de Succès</h3>
-                  </div>
-                  <ChevronDown size={20} className="accordion-icon" />
-                </button>
-                <div className="accordion-content">
-                  <div style={{ padding: '0 20px 20px 20px' }}>
-                    <BadgesSection badges={stats.badges} />
-                  </div>
-                </div>
-              </div>
-
               {/* Accordion: Top 5 Sons */}
               <div className={`accordion-item ${openSection === 'tracks' ? 'open' : ''}`}>
                 <button className="accordion-header" onClick={() => setOpenSection(openSection === 'tracks' ? '' : 'tracks')}>
@@ -130,6 +114,22 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Accordion: Succès */}
+              <div className={`accordion-item ${openSection === 'succes' ? 'open' : ''}`}>
+                <button className="accordion-header" onClick={() => setOpenSection(openSection === 'succes' ? '' : 'succes')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Award size={20} color={openSection === 'succes' ? 'var(--accent-green)' : 'white'} />
+                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Badges de Succès</h3>
+                  </div>
+                  <ChevronDown size={20} className="accordion-icon" />
+                </button>
+                <div className="accordion-content">
+                  <div style={{ padding: '0 20px 20px 20px' }}>
+                    <BadgesSection badges={stats.badges} />
                   </div>
                 </div>
               </div>
