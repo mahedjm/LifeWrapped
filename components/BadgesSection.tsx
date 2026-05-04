@@ -22,9 +22,10 @@ const LEVEL_COLORS = {
 
 interface BadgesSectionProps {
   badges?: Badge[];
+  hideTitle?: boolean;
 }
 
-export default function BadgesSection({ badges = [] }: BadgesSectionProps) {
+export default function BadgesSection({ badges = [], hideTitle = false }: BadgesSectionProps) {
   if (!badges || badges.length === 0) return null;
 
   return (
@@ -154,23 +155,25 @@ export default function BadgesSection({ badges = [] }: BadgesSectionProps) {
         }
       `}</style>
 
-      <div className="section-badge-container" style={{ marginBottom: '25px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
-          padding: '8px 24px',
-          borderRadius: '50px',
-          border: '1px solid color-mix(in srgb, var(--accent-green), transparent 85%)',
-          width: 'fit-content'
-        }}>
-          <Award size={18} color="var(--accent-green)" />
-          <h2 style={{ fontSize: '0.95rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Progression & Succès
-          </h2>
+      {!hideTitle && (
+        <div className="section-badge-container" style={{ marginBottom: '25px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            background: 'color-mix(in srgb, var(--accent-green), transparent 90%)',
+            padding: '8px 24px',
+            borderRadius: '50px',
+            border: '1px solid color-mix(in srgb, var(--accent-green), transparent 85%)',
+            width: 'fit-content'
+          }}>
+            <Award size={18} color="var(--accent-green)" />
+            <h2 style={{ fontSize: '0.95rem', margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+              Progression & Succès
+            </h2>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="badge-grid">
         {badges.map(badge => {

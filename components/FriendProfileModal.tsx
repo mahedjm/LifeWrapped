@@ -129,7 +129,7 @@ export default function FriendProfileModal({ friendId, onClose }: FriendProfileM
                 </button>
                 <div className="accordion-content">
                   <div style={{ padding: '0 20px 20px 20px' }}>
-                    <BadgesSection badges={stats.badges} />
+                    <BadgesSection badges={stats.badges} hideTitle={true} />
                   </div>
                 </div>
               </div>
