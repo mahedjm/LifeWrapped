@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db from '@/lib/db';
 import { getRecentTracks } from '@/lib/lastfm';
+import { syncRecentlyPlayed } from '@/lib/sync';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,11 +114,22 @@ export async function GET(
       FROM session_durations
     `;
 
-    // Exécution de toutes les requêtes en parallèle (Top artistes, Top morceaux, User Info, Stats Badges)
-    const [topArtists, topTracks, user, explorerRes, loyalRes, melomaniacRes, ambassadorRes, nightowlRes, marathonRes] = await Promise.all([
+    const userRes = await db.query('SELECT username FROM users WHERE id = $1', [id]);
+    const username = userRes.rows[0]?.username;
+
+    if (username) {
+      // Synchronisation "Lazy" : on met à jour les écoutes de l'ami en temps réel avant de calculer ses stats
+      try {
+        await syncRecentlyPlayed(id, username);
+      } catch (e) {
+        console.error('Erreur lors de la synchronisation lazy de l\'ami:', e);
+      }
+    }
+
+    // Exécution de toutes les requêtes en parallèle (Top artistes, Top morceaux, Stats Badges)
+    const [topArtists, topTracks, explorerRes, loyalRes, melomaniacRes, ambassadorRes, nightowlRes, marathonRes] = await Promise.all([
       db.query(`SELECT artist_name as artist, SUM(duration_ms) as total_ms, MAX(image_url) as image_url FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 GROUP BY artist_name ORDER BY total_ms DESC LIMIT 5`, [id, startUTS]),
       db.query(`SELECT track_name as title, artist_name as artist, COUNT(*) as play_count, MAX(image_url) as image_url FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 GROUP BY track_name, artist_name ORDER BY play_count DESC LIMIT 5`, [id, startUTS]),
-      db.query('SELECT username FROM users WHERE id = $1', [id]),
       db.query('SELECT COUNT(DISTINCT artist_name) FROM ecoutes WHERE user_id = $1', [id]),
       db.query(loyalQuery, [id]),
       db.query('SELECT SUM(duration_ms) FROM ecoutes WHERE user_id = $1', [id]),
@@ -126,7 +138,6 @@ export async function GET(
       db.query(marathonQuery, [id])
     ]);
 
-    const username = user.rows[0]?.username;
     let nowPlaying = null;
 
     if (username) {
@@ -177,7 +188,7 @@ export async function GET(
     });
 
     return NextResponse.json({
-      username: user.rows[0].username,
+      username: username,
       topArtists: topArtists.rows,
       topTracks: topTracks.rows,
       badges,
