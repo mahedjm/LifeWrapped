@@ -39,6 +39,21 @@ export default function HomeTab({
   const weeklyTotalMs = stats?.weekly?.reduce((acc, curr) => acc + curr.ms, 0) || 0;
   const hasData = stats?.chartData?.some(d => d.ms > 0);
 
+  // Calculs pour les phrases de résumé
+  const chartTotalMs = stats?.chartData?.reduce((acc, curr) => acc + curr.ms, 0) || 0;
+  
+  const peakHourObj = stats?.hourlyActivity && stats.hourlyActivity.length > 0 
+    ? [...stats.hourlyActivity].sort((a, b) => b.ms - a.ms)[0] 
+    : null;
+    
+  const favoriteDayObj = stats?.dailyActivity && stats.dailyActivity.length > 0
+    ? [...stats.dailyActivity].sort((a, b) => b.ms - a.ms)[0]
+    : null;
+
+  const dayMap: Record<string, string> = {
+    'Lun': 'Lundi', 'Mar': 'Mardi', 'Mer': 'Mercredi', 'Jeu': 'Jeudi', 'Ven': 'Vendredi', 'Sam': 'Samedi', 'Dim': 'Dimanche'
+  };
+
   return (
     <div style={{ 
       opacity: loading ? 0.7 : 1, 
@@ -233,6 +248,21 @@ export default function HomeTab({
                   </div>
                 )}
               </div>
+              
+              {hasData && stats?.chartData && (
+                <div style={{ 
+                  marginTop: '15px', 
+                  padding: '10px 15px', 
+                  background: 'rgba(255, 255, 255, 0.03)', 
+                  borderRadius: '12px', 
+                  fontSize: '0.9rem', 
+                  color: 'var(--text-secondary)',
+                  borderLeft: `3px solid ${themeColor || '#1DB954'}`,
+                  animation: 'fadeIn 0.5s ease-out'
+                }}>
+                  Vous avez écouté <strong style={{ color: themeColor }}>{formatTime(chartTotalMs)}</strong> de musique {chartPeriod === 'week' ? 'cette semaine' : chartPeriod === 'month' ? 'ce mois' : 'cette année'}.
+                </div>
+              )}
             </div>
 
             {/* HABITUDES D'ECOUTE */}
@@ -251,16 +281,33 @@ export default function HomeTab({
                 <div className="chart-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Clock size={18} color="var(--accent-green)" />
-                    <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Heures de Pointe <InfoTooltip text="Moyenne hebdomadaire de votre temps d'écoute par heure. Montre votre routine type." /></h3>
+                    <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Heures de Pointe <InfoTooltip text="Nombre moyen d'écoutes par heure. Basé sur votre historique complet." /></h3>
                   </div>
                 </div>
                 <div style={{ height: '220px' }}>
                   {stats?.hourlyActivity ? (
-                    <DashboardLineChart data={stats.hourlyActivity} color={themeColor || '#1DB954'} />
+                    <DashboardLineChart data={stats.hourlyActivity} color={themeColor || '#1DB954'} isCount={true} />
                   ) : (
                     <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Chargement...</div>
                   )}
                 </div>
+                {peakHourObj && peakHourObj.ms > 0 && (() => {
+                  const hour = parseInt(peakHourObj.label);
+                  return (
+                    <div style={{ 
+                      marginTop: '15px', 
+                      padding: '10px 15px', 
+                      background: 'rgba(255, 255, 255, 0.03)', 
+                      borderRadius: '12px', 
+                      fontSize: '0.85rem', 
+                      color: 'var(--text-secondary)',
+                      borderLeft: `3px solid ${themeColor || '#1DB954'}`,
+                      animation: 'fadeIn 0.5s ease-out'
+                    }}>
+                      Vous êtes le plus actif entre <strong style={{ color: themeColor }}>{hour}h et {(hour + 1) % 24}h</strong>.
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="chart-container animated" style={{ margin: 0, animationDelay: '0.6s' }}>
@@ -277,6 +324,20 @@ export default function HomeTab({
                     <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Chargement...</div>
                   )}
                 </div>
+                {favoriteDayObj && favoriteDayObj.ms > 0 && (
+                  <div style={{ 
+                    marginTop: '15px', 
+                    padding: '10px 15px', 
+                    background: 'rgba(255, 255, 255, 0.03)', 
+                    borderRadius: '12px', 
+                    fontSize: '0.85rem', 
+                    color: 'var(--text-secondary)',
+                    borderLeft: `3px solid ${themeColor || '#1DB954'}`,
+                    animation: 'fadeIn 0.5s ease-out'
+                  }}>
+                    Votre jour préféré est le <strong style={{ color: themeColor }}>{dayMap[favoriteDayObj.label] || favoriteDayObj.label}</strong>.
+                  </div>
+                )}
               </div>
             </div>
 

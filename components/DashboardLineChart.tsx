@@ -8,19 +8,20 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
 interface DashboardLineChartProps {
   data: { label: string; ms: number }[];
   color?: string;
+  isCount?: boolean;
 }
 
-export default function DashboardLineChart({ data, color = '#1db954' }: DashboardLineChartProps) {
+export default function DashboardLineChart({ data, color = '#1db954', isCount = false }: DashboardLineChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
 
   useEffect(() => {
-    const maxMinutes = Math.max(...data.map(d => d.ms / (1000 * 60)));
-    const useHours = maxMinutes >= 60;
+    const maxVal = Math.max(...data.map(d => isCount ? d.ms : d.ms / (1000 * 60)));
+    const useHours = !isCount && maxVal >= 60;
 
     const formattedData = data.map(d => ({
       label: d.label,
-      value: d.ms / (1000 * 60)
+      value: isCount ? d.ms : d.ms / (1000 * 60)
     }));
 
     if (chartInstance.current) {
@@ -83,11 +84,20 @@ export default function DashboardLineChart({ data, color = '#1db954' }: Dashboar
               displayColors: false,
               callbacks: {
                 label: (context) => {
-                  const minutes = context.parsed.y;
-                  if (minutes === null || minutes === undefined) return '0 min';
-                  if (minutes < 60) return `${minutes.toFixed(0)} min`;
-                  const hours = Math.floor(minutes / 60);
-                  const remainingMinutes = Math.round(minutes % 60);
+                  const val = context.parsed.y;
+                  if (val === null || val === undefined) return '0';
+                  
+                  if (isCount) {
+                    const label = context.label;
+                    const startHour = parseInt(label);
+                    const endHour = (startHour + 1) % 24;
+                    const interval = `${startHour.toString().padStart(2, '0')}h - ${endHour.toString().padStart(2, '0')}h`;
+                    return [`${val.toFixed(1)} écoutes (moy.)`, `Créneau: ${interval}`];
+                  }
+                  
+                  if (val < 60) return `${val.toFixed(0)} min`;
+                  const hours = Math.floor(val / 60);
+                  const remainingMinutes = Math.round(val % 60);
                   return `${hours}h ${remainingMinutes}min`;
                 }
               }
@@ -99,8 +109,9 @@ export default function DashboardLineChart({ data, color = '#1db954' }: Dashboar
               grid: { color: 'rgba(255, 255, 255, 0.05)' },
               ticks: { 
                 color: '#b3b3b3',
-                stepSize: useHours ? 60 : undefined,
+                stepSize: isCount ? undefined : (useHours ? 60 : undefined),
                 callback: function(value: any) {
+                  if (isCount) return Math.round(value) + ' écoutes';
                   if (useHours) return Math.round(value / 60) + ' h';
                   return value + ' min';
                 }
@@ -119,7 +130,7 @@ export default function DashboardLineChart({ data, color = '#1db954' }: Dashboar
         }
       });
     }
-  }, [data, color]);
+  }, [data, color, isCount]);
 
   // Helper function to convert hex to rgba
   function hexToRgba(hex: string, alpha: number) {

@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       db.query("SELECT artist_name as artist, SUM(duration_ms) as total_ms, (SELECT image_url FROM artistes a WHERE a.name = artist_name) as image_url, MAX(played_at_uts) as last_played FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3 GROUP BY artist_name ORDER BY total_ms DESC, last_played DESC, artist_name ASC LIMIT $4", [userId, artistRange.start, artistRange.end, artistLimit]),
       db.query("SELECT track_name as title, artist_name as artist, image_url, COUNT(*) as play_count, MAX(played_at_uts) as last_played FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 AND played_at_uts < $3 GROUP BY track_name, artist_name, image_url ORDER BY play_count DESC, last_played DESC, track_name ASC LIMIT $4", [userId, trackRange.start, trackRange.end, trackLimit]),
       db.query("SELECT MIN(played_at_uts) as first_uts FROM ecoutes WHERE user_id = $1", [userId]),
-      db.query("SELECT EXTRACT(HOUR FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as hour, SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 GROUP BY hour", [userId]),
+      db.query("SELECT EXTRACT(HOUR FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as hour, COUNT(*) as count FROM ecoutes WHERE user_id = $1 GROUP BY hour", [userId]),
       db.query("SELECT EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Paris') as dow, SUM(duration_ms) as total_ms FROM ecoutes WHERE user_id = $1 GROUP BY dow", [userId]),
       db.query("SELECT track_name as title, artist_name as artist, image_url, COUNT(*) as play_count FROM ecoutes WHERE to_timestamp(played_at_uts) >= NOW() - INTERVAL '2 days' AND user_id = $1 GROUP BY track_name, artist_name, image_url ORDER BY play_count DESC, MAX(played_at_uts) DESC LIMIT 1", [userId]),
       chartPromise
@@ -127,11 +127,13 @@ export async function GET(request: NextRequest) {
     if (partial === 'chart') return NextResponse.json({ chartData });
 
     // Format Trends Data
-    const firstUts = firstEntryRes.rows[0]?.first_uts || (Date.now() / 1000);
-    const firstDate = firstEntryRes.rows[0]?.first_uts ? new Date(firstEntryRes.rows[0].first_uts * 1000).toISOString() : null;
+    const firstUtsRaw = firstEntryRes.rows[0]?.first_uts;
+    // On ignore les timestamps absurdes (avant 2000) pour le calcul des semaines
+    const firstUts = (firstUtsRaw && Number(firstUtsRaw) > 946684800) ? Number(firstUtsRaw) : (Date.now() / 1000);
+    const firstDate = firstUtsRaw ? new Date(Number(firstUtsRaw) * 1000).toISOString() : null;
     const totalWeeks = Math.max(1, (Date.now() / 1000 - firstUts) / (60 * 60 * 24 * 7));
 
-    const hourlyMap = Object.fromEntries(hourlyRes.rows.map(r => [Math.floor(r.hour), Number(r.total_ms)]));
+    const hourlyMap = Object.fromEntries(hourlyRes.rows.map(r => [Math.floor(r.hour), Number(r.count)]));
     const hourlyActivity = Array.from({ length: 24 }, (_, h) => ({
       label: `${h.toString().padStart(2, '0')}h`,
       ms: (hourlyMap[h] || 0) / totalWeeks

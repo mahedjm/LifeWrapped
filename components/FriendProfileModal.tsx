@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Music, User, TrendingUp, Clock, Award, ChevronDown } from 'lucide-react';
+import { X, Music, User, TrendingUp, Clock, Award, ChevronDown, Activity, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { formatTime } from '@/lib/utils';
 import BadgesSection from '@/components/BadgesSection';
@@ -16,7 +16,23 @@ interface FriendStats {
     artist: string;
     image: string;
   };
+  extraStats?: {
+    yearHours: number;
+    weekHours: number;
+    favoriteDay: number;
+    favoriteHour: number;
+  };
+  commonArtists: { artist: string; image_url: string | null }[];
 }
+
+const DAYS_OF_WEEK = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+const formatHoursToHMin = (decimalHours: number) => {
+  if (!decimalHours) return '0h00';
+  const hours = Math.floor(decimalHours);
+  const minutes = Math.round((decimalHours - hours) * 60);
+  return `${hours}h${minutes.toString().padStart(2, '0')}`;
+};
 
 interface FriendProfileModalProps {
   friendId: string;
@@ -138,6 +154,73 @@ export default function FriendProfileModal({ friendId, onClose, themeColor }: Fr
             )}
 
             <div className="accordion-container">
+              {/* Accordion: Statistiques Globales */}
+              {stats.extraStats && (
+                <div className={`accordion-item ${openSection === 'stats' ? 'open' : ''}`}>
+                  <button className="accordion-header" onClick={() => setOpenSection(openSection === 'stats' ? '' : 'stats')}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Activity size={20} color={openSection === 'stats' ? 'var(--accent-green)' : 'white'} />
+                      <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Statistiques Globales</h3>
+                    </div>
+                    <ChevronDown size={20} className="accordion-icon" />
+                  </button>
+                  <div className="accordion-content">
+                    <div style={{ padding: '0 20px 20px 20px' }}>
+                      <div className="global-stats-grid">
+                        <div className="stat-box">
+                          <span className="stat-label">Durée d'écoute totale</span>
+                          <span className="stat-value">{formatHoursToHMin(stats.extraStats.yearHours)}</span>
+                        </div>
+                        <div className="stat-box">
+                          <span className="stat-label">Durée d'écoute cette semaine</span>
+                          <span className="stat-value">{formatHoursToHMin(stats.extraStats.weekHours)}</span>
+                        </div>
+                        <div className="stat-box">
+                          <span className="stat-label">Jour Préféré</span>
+                          <span className="stat-value">{DAYS_OF_WEEK[stats.extraStats.favoriteDay - 1] || 'N/A'}</span>
+                        </div>
+                        <div className="stat-box">
+                          <span className="stat-label">Heure de Pointe</span>
+                          <span className="stat-value">{stats.extraStats.favoriteHour}h - {(stats.extraStats.favoriteHour + 1) % 24}h</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Accordion: Artistes en Commun */}
+              <div className={`accordion-item ${openSection === 'common' ? 'open' : ''}`}>
+                <button className="accordion-header" onClick={() => setOpenSection(openSection === 'common' ? '' : 'common')}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Users size={20} color={openSection === 'common' ? 'var(--accent-green)' : 'white'} />
+                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Artistes en Commun <span className="month-tag">{stats.commonArtists.length}</span></h3>
+                  </div>
+                  <ChevronDown size={20} className="accordion-icon" />
+                </button>
+                <div className="accordion-content">
+                  <div style={{ padding: '0 20px 20px 20px' }}>
+                    {stats.commonArtists.length > 0 ? (
+                      <div className="stats-list">
+                        {stats.commonArtists.map((a, i) => (
+                          <div key={i} className="stat-item">
+                            {a.image_url ? <img src={a.image_url} alt="" /> : <div className="placeholder-img"><User size={16} /></div>}
+                            <div className="stat-info">
+                              <div className="stat-name">{a.artist}</div>
+                              <div className="stat-sub">Vous écoutez tous les deux cet artiste</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '20px', opacity: 0.5, fontSize: '0.9rem' }}>
+                        Aucun artiste en commun dans vos Top 50 respectifs.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Accordion: Top 5 Sons */}
               <div className={`accordion-item ${openSection === 'tracks' ? 'open' : ''}`}>
                 <button className="accordion-header" onClick={() => setOpenSection(openSection === 'tracks' ? '' : 'tracks')}>
@@ -208,6 +291,8 @@ export default function FriendProfileModal({ friendId, onClose, themeColor }: Fr
                 </div>
               </div>
             </div>
+            {/* Spacer to avoid clipping at the bottom */}
+            <div style={{ height: '40px' }} />
           </>
         ) : (
           <div className="error-state">Erreur lors du chargement.</div>
@@ -356,6 +441,40 @@ export default function FriendProfileModal({ friendId, onClose, themeColor }: Fr
         }
         .stat-name { font-weight: 700; font-size: 0.95rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .stat-sub { font-size: 0.8rem; opacity: 0.5; }
+
+        .global-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
+        }
+        
+        .stat-box {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--glass-border);
+          border-radius: 16px;
+          padding: 15px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        }
+
+        .stat-label {
+          font-size: 0.65rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: rgba(255, 255, 255, 0.5);
+          margin-bottom: 5px;
+          font-weight: 700;
+          line-height: 1.2;
+        }
+
+        .stat-value {
+          font-size: 1.2rem;
+          font-weight: 900;
+          color: var(--accent-green);
+        }
 
         .loading-state { text-align: center; padding: 60px 0; }
         .spinner {

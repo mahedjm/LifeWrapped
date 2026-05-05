@@ -8,21 +8,22 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, Title, Too
 interface DashboardChartProps {
   data: { date?: string; label?: string; ms: number }[];
   color?: string;
+  isCount?: boolean;
 }
 
-export default function DashboardChart({ data, color = '#1db954' }: DashboardChartProps) {
+export default function DashboardChart({ data, color = '#1db954', isCount = false }: DashboardChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
 
   const prevDataRef = useRef<string>('');
 
   useEffect(() => {
-    const maxMinutes = Math.max(...data.map(d => d.ms / (1000 * 60)));
-    const useHours = maxMinutes >= 60;
+    const maxVal = Math.max(...data.map(d => isCount ? d.ms : d.ms / (1000 * 60)));
+    const useHours = !isCount && maxVal >= 60;
 
     const formattedData = data.map(d => ({
       label: d.label || (d.date ? new Date(d.date).toLocaleDateString(undefined, { weekday: 'short' }) : ''),
-      value: d.ms / (1000 * 60) // Garder toujours en minutes pour la stabilité des calculs
+      value: isCount ? d.ms : d.ms / (1000 * 60)
     }));
 
     if (chartInstance.current) {
@@ -64,11 +65,12 @@ export default function DashboardChart({ data, color = '#1db954' }: DashboardCha
             tooltip: {
               callbacks: {
                 label: (context) => {
-                  const minutes = context.parsed.y;
-                  if (minutes === null || minutes === undefined) return '0 min';
-                  if (minutes < 60) return `${minutes.toFixed(0)} min`;
-                  const hours = Math.floor(minutes / 60);
-                  const remainingMinutes = Math.round(minutes % 60);
+                  const val = context.parsed.y;
+                  if (val === null || val === undefined) return '0';
+                  if (isCount) return `${val.toFixed(1)} écoutes (moy.)`;
+                  if (val < 60) return `${val.toFixed(0)} min`;
+                  const hours = Math.floor(val / 60);
+                  const remainingMinutes = Math.round(val % 60);
                   return `${hours}h ${remainingMinutes}min`;
                 }
               }
@@ -80,8 +82,9 @@ export default function DashboardChart({ data, color = '#1db954' }: DashboardCha
               grid: { color: 'rgba(255, 255, 255, 0.1)' },
               ticks: { 
                 color: '#b3b3b3',
-                stepSize: useHours ? 60 : undefined,
+                stepSize: isCount ? undefined : (useHours ? 60 : undefined),
                 callback: function(value: any) {
+                  if (isCount) return value.toFixed(1) + ' écoutes';
                   if (useHours) return Math.round(value / 60) + ' h';
                   return value + ' min';
                 }
@@ -100,7 +103,7 @@ export default function DashboardChart({ data, color = '#1db954' }: DashboardCha
     return () => {
       // On ne fait rien ici pour garder le graphique en vie entre les re-renders
     };
-  }, [data, color]);
+  }, [data, color, isCount]);
 
   // Nettoyage final lors de la fermeture de la page
   useEffect(() => {

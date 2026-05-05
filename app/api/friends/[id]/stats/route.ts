@@ -28,10 +28,23 @@ export async function GET(
     }
 
     // Début du mois en cours
-    const startOfMonth = new Date();
+    const nowObj = new Date();
+    const startOfMonth = new Date(nowObj);
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
     const startUTS = Math.floor(startOfMonth.getTime() / 1000);
+
+    // Début de la semaine (Lundi)
+    const dayOfWeek = nowObj.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(nowObj);
+    monday.setDate(nowObj.getDate() - diffToMonday);
+    monday.setHours(0, 0, 0, 0);
+    const mondayUTS = Math.floor(monday.getTime() / 1000);
+
+    // Début de l'année
+    const yearStart = new Date(nowObj.getFullYear(), 0, 1);
+    const yearStartUTS = Math.floor(yearStart.getTime() / 1000);
 
     const BADGE_CONFIG = {
       explorer: {
@@ -126,8 +139,11 @@ export async function GET(
       }
     }
 
-    // Exécution de toutes les requêtes en parallèle (Top artistes, Top morceaux, Stats Badges)
-    const [topArtists, topTracks, explorerRes, loyalRes, melomaniacRes, ambassadorRes, nightowlRes, marathonRes] = await Promise.all([
+    // Exécution de toutes les requêtes en parallèle (Top artistes, Top morceaux, Stats Badges, Extra Stats)
+    const [
+      topArtists, topTracks, explorerRes, loyalRes, melomaniacRes, ambassadorRes, nightowlRes, marathonRes,
+      yearHoursRes, weekHoursRes, favDayRes, favHourRes, commonArtistsRes
+    ] = await Promise.all([
       db.query(`SELECT artist_name as artist, SUM(duration_ms) as total_ms, MAX(image_url) as image_url FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 GROUP BY artist_name ORDER BY total_ms DESC LIMIT 5`, [id, startUTS]),
       db.query(`SELECT track_name as title, artist_name as artist, COUNT(*) as play_count, MAX(image_url) as image_url FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2 GROUP BY track_name, artist_name ORDER BY play_count DESC LIMIT 5`, [id, startUTS]),
       db.query('SELECT COUNT(DISTINCT artist_name) FROM ecoutes WHERE user_id = $1', [id]),
@@ -135,7 +151,24 @@ export async function GET(
       db.query('SELECT SUM(duration_ms) FROM ecoutes WHERE user_id = $1', [id]),
       db.query('SELECT COUNT(*) FROM friendships WHERE user_id = $1 OR friend_id = $1', [id]),
       db.query("SELECT COUNT(*) FROM ecoutes WHERE user_id = $1 AND (EXTRACT(HOUR FROM to_timestamp(played_at_uts) AT TIME ZONE 'Europe/Paris') >= 21 OR EXTRACT(HOUR FROM to_timestamp(played_at_uts) AT TIME ZONE 'Europe/Paris') < 3)", [id]),
-      db.query(marathonQuery, [id])
+      db.query(marathonQuery, [id]),
+      db.query('SELECT SUM(duration_ms) FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2', [id, yearStartUTS]),
+      db.query('SELECT SUM(duration_ms) FROM ecoutes WHERE user_id = $1 AND played_at_uts >= $2', [id, mondayUTS]),
+      db.query("SELECT EXTRACT(ISODOW FROM to_timestamp(played_at_uts) AT TIME ZONE 'Europe/Paris') as day_of_week, COUNT(*) as count FROM ecoutes WHERE user_id = $1 GROUP BY day_of_week ORDER BY count DESC LIMIT 1", [id]),
+      db.query("SELECT EXTRACT(HOUR FROM to_timestamp(played_at_uts) AT TIME ZONE 'Europe/Paris') as hour, COUNT(*) as count FROM ecoutes WHERE user_id = $1 GROUP BY hour ORDER BY count DESC LIMIT 1", [id]),
+      db.query(`
+        WITH my_top AS (
+          SELECT artist_name FROM ecoutes WHERE user_id = $1 GROUP BY artist_name ORDER BY SUM(duration_ms) DESC LIMIT 50
+        ),
+        friend_top AS (
+          SELECT artist_name FROM ecoutes WHERE user_id = $2 GROUP BY artist_name ORDER BY SUM(duration_ms) DESC LIMIT 50
+        )
+        SELECT a.name as artist, a.image_url 
+        FROM artistes a
+        JOIN my_top mt ON a.name = mt.artist_name
+        JOIN friend_top ft ON a.name = ft.artist_name
+        ORDER BY a.name ASC
+      `, [session, id])
     ]);
 
     let nowPlaying = null;
@@ -192,7 +225,14 @@ export async function GET(
       topArtists: topArtists.rows,
       topTracks: topTracks.rows,
       badges,
-      nowPlaying
+      nowPlaying,
+      extraStats: {
+        yearHours: Number(yearHoursRes.rows[0]?.sum || 0) / (1000 * 60 * 60),
+        weekHours: Number(weekHoursRes.rows[0]?.sum || 0) / (1000 * 60 * 60),
+        favoriteDay: Number(favDayRes.rows[0]?.day_of_week || 1),
+        favoriteHour: Number(favHourRes.rows[0]?.hour || 12)
+      },
+      commonArtists: commonArtistsRes.rows
     });
   } catch (error) {
     console.error('API Friend Stats Error:', error);
